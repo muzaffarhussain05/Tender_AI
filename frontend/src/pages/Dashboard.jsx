@@ -95,18 +95,19 @@ const fadeUp = {
 export default function Dashboard() {
   const {
     dashboardStats,
-    tenderList,
+    
     currentUser,
     isLoading,
     loadDashboard,
     loadTenders,
     categoryDistribution,
     tenderActivity,
+    recentTenders
   } = useApp();
 
   useEffect(() => {
     loadDashboard();
-    loadTenders();
+   
   }, []);
 
   const pieData =
@@ -121,6 +122,8 @@ export default function Dashboard() {
       tenders: item.tenders,
     })) ?? [];
 
+ 
+    
   const stats = [
     {
       label: "Total Tenders",
@@ -152,7 +155,7 @@ export default function Dashboard() {
     },
   ];
 
-  const recentTenders = tenderList.slice(0, 5);
+  // const recentTenders = recentTenders
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

@@ -3,9 +3,16 @@ import {
   getCategoryDistribution,
   getOverview,
   getActivity,
+  getRecentTenders,
 } from "../api/dashboardApi";
-import { searchTenders } from "../api/tenderApi";
-import { getSavedTenders } from "../api/tenderApi";
+
+
+import {
+    getTenders,
+    getTenderDetails,
+    getSavedTenders
+} from "../api/tenderApi";
+import { select } from "framer-motion/client";
 const AppContext = createContext(null);
 
 const initialSettings = {
@@ -26,6 +33,7 @@ export function AppProvider({ children }) {
   const [currentUser] = useState(initialUser);
   const [settings, setSettings] = useState(initialSettings);
   const [tenderList, setTenderList] = useState([]);
+  const [recentTenders, setRecentTenders] = useState([]);
   const [savedTenders, setSavedTenders] = useState([]);
   const [bookmarkedIds, setBookmarkedIds] = useState(
     new Set(["NHS-2024-872", "KSA-ENERGY-030"]),
@@ -41,7 +49,32 @@ export function AppProvider({ children }) {
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [categoryDistribution, setCategoryDistribution] = useState([]);
   const [tenderActivity, setTenderActivity] = useState([]);
+const [selectedTender, setSelectedTender] = useState(null);
+const [currentPage, setCurrentPage] = useState(1);
 
+const [pageSize] = useState(20);
+
+const [totalPages, setTotalPages] = useState(1);
+
+const [totalItems, setTotalItems] = useState(0);
+const [filters, setFilters] = useState({
+    q: "",
+
+    category: "",
+    organization: "",
+    location: "",
+    status: "",
+
+    publish_from: "",
+    publish_to: "",
+
+    closing_from: "",
+    closing_to: "",
+
+    sort_by: "publish_date",
+    sort_order: "desc",
+});
+ const [selectedCategory, setSelectedCategory] = useState("All");
   const updateSettings = useCallback((updates) => {
     setSettings((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -55,10 +88,13 @@ export function AppProvider({ children }) {
       const dashboardstats = await getOverview();
       const categorydistribution = await getCategoryDistribution();
       const activitymonthly = await getActivity();
+      const recenttender=await getRecentTenders();
+
 
       setDashboardStats(dashboardstats);
       setCategoryDistribution(categorydistribution);
       setTenderActivity(activitymonthly);
+      setRecentTenders(recenttender);
     } finally {
       setIsLoading(false);
     }
@@ -66,22 +102,83 @@ export function AppProvider({ children }) {
 
   //recent tenders on dashboard
 
-  const loadTenders = useCallback(async () => {
+  // const loadRecentTenders = useCallback(async () => {
+  //   try {
+  //     setIsLoading(true);
+
+  //     const data = await searchTenders({
+  //       page: 1,
+  //       page_size: 20,
+  //     });
+
+  //     setTenderList(data.items);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }, []);
+  // //Load Saved Tenders
+
+
+ const loadTenders = useCallback(
+    async (customFilters = filters, page = 1) => {
+        try {
+            setIsLoading(true);
+
+            const response = await getTenders({
+                ...customFilters,
+                page,
+                page_size: pageSize,
+            });
+
+            setTenderList(response.items);
+            setCurrentPage(response.page);
+            setTotalPages(response.total_pages);
+            setTotalItems(response.total);
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    },
+    [filters, pageSize]
+);
+
+
+const clearTenderFilters = useCallback(() => {
+    setFilters({
+        q: "",
+
+        category: "",
+        organization: "",
+        location: "",
+        status: "",
+
+        publish_from: "",
+        publish_to: "",
+
+        closing_from: "",
+        closing_to: "",
+
+        sort_by: "publish_date",
+        sort_order: "desc",
+    });
+}, []);
+//loadtenderdetails
+const loadTenderDetails = useCallback(async (id) => {
     try {
-      setIsLoading(true);
+        setIsLoading(true);
 
-      const data = await searchTenders({
-        page: 1,
-        page_size: 20,
-      });
+        const response = await getTenderDetails(id);
 
-      setTenderList(data.items);
+        setSelectedTender(response);
+
+    } catch (error) {
+        console.error("Failed to load tender details:", error);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  }, []);
-  //Load Saved Tenders
-
+}, []);
   const loadSavedTenders = useCallback(async () => {
     const data = await getSavedTenders();
 
@@ -173,6 +270,22 @@ export function AppProvider({ children }) {
     loadTenders,
     categoryDistribution,
     tenderActivity,
+    selectedTender,
+
+filters,
+setFilters,
+
+currentPage,
+totalPages,
+totalItems,
+
+loadTenders,
+loadTenderDetails,
+clearTenderFilters,
+setSelectedCategory,
+selectedCategory,
+recentTenders
+
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

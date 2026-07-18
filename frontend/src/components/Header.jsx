@@ -1,7 +1,7 @@
 import { Search, Bell, RotateCcw } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
-
+import { useNavigate } from 'react-router-dom';
 const pageTitles = {
   "/dashboard": "Dashboard",
   "/ai-assistant": "AI Assistant",
@@ -14,8 +14,9 @@ const pageTitles = {
 
 export default function Header({ searchPlaceholder = "Search..." }) {
   const location = useLocation();
-  const { currentUser } = useApp();
+  const { currentUser,tenderList,filters,setFilters,loadTenders } = useApp();
   void pageTitles[location.pathname];
+   const navigate = useNavigate();
 
   const dateStr = new Date().toLocaleDateString("en-US", {
     weekday: "short",
@@ -24,6 +25,14 @@ export default function Header({ searchPlaceholder = "Search..." }) {
     year: "numeric",
   });
 
+
+  const handleSearch = () => {
+    navigate('/tender-search'); 
+    loadTenders(filters, 1);
+};
+
+console.log(tenderList);
+
   return (
     <header className="flex items-center gap-4 px-5 py-3 bg-white border-b border-gray-200 shrink-0">
       <div className="relative flex-1 max-w-md">
@@ -31,6 +40,18 @@ export default function Header({ searchPlaceholder = "Search..." }) {
         <input
           type="text"
           placeholder={searchPlaceholder}
+          value={filters.q}
+          onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        handleSearch();
+      }
+    }}
+          onChange={(e) =>
+        setFilters((prev) => ({
+            ...prev,
+            q: e.target.value,
+        }))
+      }
           className="w-full pl-9 pr-4 py-2 bg-[#eff4ff] border border-[#c6c6cd] rounded-lg text-sm outline-none focus:border-[#0058be] placeholder-gray-400"
         />
       </div>

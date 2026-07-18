@@ -1,33 +1,40 @@
 import api from "./axios";
 
-export const searchTenders = async ({
-    query = "",
-    category = "",
-    organization = "",
-    location = "",
-    status = "",
-    page = 1,
-    page_size = 20,
-}) => {
+/**
+ * Get tenders (list, search, filter, sort & pagination)
+ */
+export const getTenders = async (filters = {}) => {
+    const params = {};
+
+    Object.entries(filters).forEach(([key, value]) => {
+        if (
+            value !== "" &&
+            value !== null &&
+            value !== undefined
+        ) {
+            params[key] = value;
+        }
+    });
+
     const res = await api.get("/tenders", {
-        params: {
-            query,
-            category,
-            organization,
-            location,
-            status,
-            page,
-            page_size,
-        },
+        params,
     });
 
     return res.data;
 };
 
+/**
+ * Tender details
+ */
 export const getTenderDetails = async (id) => {
     const res = await api.get(`/tenders/${id}`);
     return res.data;
 };
+
+/**
+ * Tender details
+ */
+
 
 export const saveTender = async (id) => {
     const res = await api.post(`/tenders/${id}/save`);

@@ -10,12 +10,12 @@ export const getCategoryDistribution = async () => {
     return res.data;
 };
 
-export const getRecentTenders = async (limit = 10) => {
+export const getRecentTenders = async (limit = 5) => {
     const res = await api.get("/dashboard/recent-tenders", {
         params: { limit },
     });
 
-    return res.data;
+    return res.data.items;
 };
 
 export const getActivity = async (months = 12) => {
