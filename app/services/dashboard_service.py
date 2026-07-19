@@ -143,7 +143,7 @@ class DashboardService:
             if index < 4:
                 items.append({
                     "category": category if category else "Other",
-                    "percentage": round((count / total) * 100)
+                    "percentage": round((count / total) * 100) if total else 0
                 })
             else:
                 other_count += count
@@ -151,7 +151,7 @@ class DashboardService:
         if other_count > 0:
             items.append({
                 "category": "Other",
-                "percentage": round((other_count / total) * 100)
+                "percentage": round((other_count / total) * 100) if total else 0
             })
 
         return {

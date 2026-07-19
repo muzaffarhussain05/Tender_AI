@@ -38,7 +38,7 @@ const intelligenceFeed = [
 ];
 
 export default function AIAssistant() {
-  const { chatMessages, addMessage, clearChat, currentChat, isAiTyping, setIsAiTyping } = useApp();
+  const { chatMessages, addMessage, clearChat, currentChat, isAiTyping, setIsAiTyping,newChat,sendChatMessage } = useApp();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
@@ -61,7 +61,7 @@ export default function AIAssistant() {
       addMessage({
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `I'm analyzing your query: **"${userMsg.content}"**\n\nBased on current tender data, I found relevant opportunities matching your profile:\n\n- **15 matching tenders** found in the database\n- **Top match score**: 98% for DXB-IT-2024-001\n- **Recommended action**: Review eligibility criteria before Oct 12 deadline`,
+        content: `I'm analyzing your query: **"${userMsg?.content}"**\n\nBased on current tender data, I found relevant opportunities matching your profile:\n\n- **15 matching tenders** found in the database\n- **Top match score**: 98% for DXB-IT-2024-001\n- **Recommended action**: Review eligibility criteria before Oct 12 deadline`,
         timestamp: new Date(),
       });
       setIsAiTyping(false);
@@ -75,6 +75,15 @@ export default function AIAssistant() {
     }
   };
 
+  const handleSend = async () => {
+
+    if (!input.trim()) return;
+
+    await sendChatMessage(input);
+
+    setInput("");
+
+};
   const isEmpty = chatMessages.length === 0;
 
   return (
@@ -83,11 +92,11 @@ export default function AIAssistant() {
       <div className="flex flex-col flex-1 min-w-0 h-full bg-white">
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 shrink-0">
           <div>
-            <h2 className="text-sm font-semibold text-[#0b1c30]">{currentChat.title}</h2>
+            <h2 className="text-sm font-semibold text-[#0b1c30]">{currentChat?.title}</h2>
             <p className="text-xs text-[#6b7280]">AI-powered tender intelligence</p>
           </div>
           <button
-            onClick={clearChat}
+            onClick={newChat}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-[#0058be] text-white rounded-lg hover:bg-[#0047a1] transition-colors"
           >
             <Plus size={13} />
@@ -265,7 +274,15 @@ export default function AIAssistant() {
               </button>
               <div className="flex-1" />
               <button
-                onClick={sendMessage}
+                // onClick={sendMessage}
+                onClick={handleSend}
+                onKeyDown={(e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+    }
+}}
+
                 disabled={!input.trim()}
                 className="flex items-center gap-2 px-4 py-2 bg-[#0b1c30] text-white text-sm rounded-lg hover:bg-[#1a2d44] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >

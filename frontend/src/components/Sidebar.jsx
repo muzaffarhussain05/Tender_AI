@@ -32,10 +32,10 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
   const navigate = useNavigate();
-  const { chatHistory, currentUser } = useApp();
+  const { chatHistory, currentUser,openChat } = useApp();
 
-  const filtered = chatHistory.filter((item) =>
-    item.title.toLowerCase().includes(historySearch.toLowerCase())
+  const filtered = chatHistory?.filter((item) =>
+    item?.title?.toLowerCase()?.includes(historySearch.toLowerCase())
   );
 
   const grouped = filtered.reduce((acc, item) => {
@@ -147,7 +147,7 @@ export default function Sidebar() {
                   {items.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => navigate("/chat-history")}
+                      onClick={() => openChat(item.id)}
                       className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-[#45464d] hover:bg-gray-100 rounded-md text-left"
                     >
                       <MessageSquare size={12} className="text-gray-400 shrink-0" />

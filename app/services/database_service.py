@@ -100,20 +100,7 @@ class DatabaseService:
             .order_by(ChatMessage.created_at)
             .all()
         )
-    def save_chat(self,question,answer):
-        now=datetime.now()
-        obj=ChatMessage(
-            id=1,
-            question=question,
-            answer=answer,
-            user_id=1,
-            created_at=now
-        )
-        self.db.add(obj)
-        self.commit()
-        self.db.refresh(obj)
-        return obj
-
+   
     def save_tender(self, tender,document):
 
         now = datetime.now()
@@ -387,13 +374,17 @@ class DatabaseService:
 
      return [row[0] for row in rows]
 
-    def get_session(self, session_id):
+    def get_session(self, session_id, user_id=None):
 
-        return (
+        query = (
             self.db.query(ChatSession)
             .filter(ChatSession.id == session_id)
-            .first()
         )
+
+        if user_id is not None:
+            query = query.filter(ChatSession.user_id == user_id)
+
+        return query.first()
 
     def get_sessions(self, user_id):
 
@@ -466,9 +457,13 @@ class DatabaseService:
 
         return False
 
+    def clear_messages(self, session_id):
 
-
-    def delete_session(self, session_id):
+        (
+            self.db.query(ChatMessage)
+            .filter(ChatMessage.session_id == session_id)
+            .delete(synchronize_session=False)
+        )
 
         session = (
             self.db.query(ChatSession)
@@ -476,11 +471,12 @@ class DatabaseService:
             .first()
         )
 
-        if session is None:
-            return False
-
-        self.db.delete(session)
+        if session:
+            session.title = "New Chat"
+            session.updated_at = datetime.now()
 
         self.commit()
 
-        return True   
+        return True
+
+    

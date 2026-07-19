@@ -4,8 +4,9 @@ from pydantic import BaseModel
 
 
 class TenderItem(BaseModel):
-    id: int
+    id: int | None
     title: str
+    tender_no:str
     organization: str
     category: str | None = None
     location: str | None = None

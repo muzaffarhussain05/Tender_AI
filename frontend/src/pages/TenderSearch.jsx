@@ -19,13 +19,6 @@ import Header from "../components/Header";
 import { useApp } from "../context/AppContext";
 
 
-
-const statusColor = {
-  OPEN: "bg-green-100 text-green-700",
-  "CLOSING SOON": "bg-orange-100 text-orange-700",
-  AWARDED: "bg-blue-100 text-blue-700",
-};
-
 export default function TenderSearch() {
   const {
     tenderList,
@@ -41,33 +34,30 @@ export default function TenderSearch() {
     selectedCategory,
     setSelectedCategory,
     isLoading,
+    saveTenderById,
+    removeSavedTenderById,
   } = useApp();
   const [showFilters, setShowFilters] = useState(true);
- 
+
   const [minMatch, setMinMatch] = useState(70);
   const [budgetRange, setBudgetRange] = useState("$100k - $500k");
 
-
-
-
-
   const categories = [
     "All",
-  "Miscellaneous",
-  "Services",
-  "Civil Works",
-  "Electrical Items",
-  
-];
+    "Miscellaneous",
+    "Services",
+    "Civil Works",
+    "Electrical Items",
+  ];
 
-const selectCategory = (category) => {
-  setSelectedCategory(category);
+  const selectCategory = (category) => {
+    setSelectedCategory(category);
 
-  setFilters((prev) => ({
-    ...prev,
-    category: category === "All" ? "" : category,
-  }));
-};
+    setFilters((prev) => ({
+      ...prev,
+      category: category === "All" ? "" : category,
+    }));
+  };
   const handleLocationChange = (e) => {
     setFilters((prev) => ({
       ...prev,
@@ -87,6 +77,8 @@ const selectCategory = (category) => {
   }, [loadTenders]);
 
   const filtered = tenderList;
+  console.log("filtered", filtered);
+
   const handleSearch = () => {
     loadTenders(filters, 1);
   };
@@ -257,8 +249,6 @@ const selectCategory = (category) => {
                 Clear All Filters
               </button>
             </div>
-
-           
           </motion.aside>
         )}
 
@@ -315,7 +305,7 @@ const selectCategory = (category) => {
               >
                 <div className="flex items-start gap-4">
                   <div className="shrink-0 w-16 h-16 rounded-xl bg-[#eff4ff] flex flex-col items-center justify-center border border-[#dce8ff]">
-                    <div className="text-[10px] text-[#6b7280]">MATCH</div>
+                    <div className="text-[10px] text-[#6b7280]">ID</div>
                     <div className="text-xl font-bold text-[#0058be]">
                       #{t.id}
                     </div>
@@ -326,7 +316,18 @@ const selectCategory = (category) => {
                         {t.title}
                       </h3>
                       <button
-                        onClick={() => toggleBookmark(t.id)}
+                        onClick={async () => {
+                          if (bookmarkedIds.has(t.id)) {
+                            console.log("removing");
+                            console.log(t);
+
+                            await removeSavedTenderById(t.id);
+                          } else {
+                            console.log("saving");
+
+                            await saveTenderById(t.id);
+                          }
+                        }}
                         className="shrink-0 p-1 hover:bg-gray-100 rounded-md transition-colors"
                       >
                         {bookmarkedIds.has(t.id) ? (

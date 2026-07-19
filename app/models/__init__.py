@@ -5,3 +5,4 @@ from .scraper_log import ScraperLog
 from .user import User
 from .chat_message import ChatMessage
 from .chat_session import ChatSession
+from .saved_tender import SavedTender

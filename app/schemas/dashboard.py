@@ -18,7 +18,7 @@ class DashboardOverviewResponse(BaseModel):
 
 
 class RecentTenderItem(BaseModel):
-    id: int
+    id: int | None
     status: str
     title: str
     organization: str

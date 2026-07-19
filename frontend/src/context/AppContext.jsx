@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import {
   getCategoryDistribution,
   getOverview,
@@ -6,13 +12,22 @@ import {
   getRecentTenders,
 } from "../api/dashboardApi";
 
-
 import {
-    getTenders,
-    getTenderDetails,
-    getSavedTenders
-} from "../api/tenderApi";
-import { select } from "framer-motion/client";
+  getSavedTenders,
+  saveTender,
+  removeSavedTender,
+} from "../api/savedTenderApi";
+import { getTenders, getTenderDetails } from "../api/tenderApi";
+import {
+  createChat,
+  sendMessage,
+  getChatHistory,
+  getConversation,
+  renameChat,
+  deleteChat,
+  clearChat,
+} from "../api/chatApi";
+
 const AppContext = createContext(null);
 
 const initialSettings = {
@@ -35,29 +50,25 @@ export function AppProvider({ children }) {
   const [tenderList, setTenderList] = useState([]);
   const [recentTenders, setRecentTenders] = useState([]);
   const [savedTenders, setSavedTenders] = useState([]);
-  const [bookmarkedIds, setBookmarkedIds] = useState(
-    new Set(["NHS-2024-872", "KSA-ENERGY-030"]),
-  );
+
   const [chatMessages, setChatMessages] = useState([]);
-  const [currentChat, setCurrentChat] = useState({
-    id: "current",
-    title: "IT Infrastructure — GCC Region",
-  });
+  const [currentChat, setCurrentChat] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const [dashboardStats, setDashboardStats] = useState(null);
+  const [chatLoading, setChatLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const [categoryDistribution, setCategoryDistribution] = useState([]);
   const [tenderActivity, setTenderActivity] = useState([]);
-const [selectedTender, setSelectedTender] = useState(null);
-const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTender, setSelectedTender] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-const [pageSize] = useState(20);
+  const [pageSize] = useState(20);
 
-const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-const [totalItems, setTotalItems] = useState(0);
-const [filters, setFilters] = useState({
+  const [totalItems, setTotalItems] = useState(0);
+  const [filters, setFilters] = useState({
     q: "",
 
     category: "",
@@ -73,8 +84,8 @@ const [filters, setFilters] = useState({
 
     sort_by: "publish_date",
     sort_order: "desc",
-});
- const [selectedCategory, setSelectedCategory] = useState("All");
+  });
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const updateSettings = useCallback((updates) => {
     setSettings((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -88,8 +99,7 @@ const [filters, setFilters] = useState({
       const dashboardstats = await getOverview();
       const categorydistribution = await getCategoryDistribution();
       const activitymonthly = await getActivity();
-      const recenttender=await getRecentTenders();
-
+      const recenttender = await getRecentTenders();
 
       setDashboardStats(dashboardstats);
       setCategoryDistribution(categorydistribution);
@@ -99,7 +109,7 @@ const [filters, setFilters] = useState({
       setIsLoading(false);
     }
   }, []);
-
+  const bookmarkedIds = new Set(savedTenders.map((t) => t.tender_id));
   //recent tenders on dashboard
 
   // const loadRecentTenders = useCallback(async () => {
@@ -118,127 +128,200 @@ const [filters, setFilters] = useState({
   // }, []);
   // //Load Saved Tenders
 
-
- const loadTenders = useCallback(
+  const loadTenders = useCallback(
     async (customFilters = filters, page = 1) => {
-        try {
-            setIsLoading(true);
-
-            const response = await getTenders({
-                ...customFilters,
-                page,
-                page_size: pageSize,
-            });
-
-            setTenderList(response.items);
-            setCurrentPage(response.page);
-            setTotalPages(response.total_pages);
-            setTotalItems(response.total);
-
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setIsLoading(false);
-        }
-    },
-    [filters, pageSize]
-);
-
-
-const clearTenderFilters = useCallback(() => {
-    setFilters({
-        q: "",
-
-        category: "",
-        organization: "",
-        location: "",
-        status: "",
-
-        publish_from: "",
-        publish_to: "",
-
-        closing_from: "",
-        closing_to: "",
-
-        sort_by: "publish_date",
-        sort_order: "desc",
-    });
-}, []);
-//loadtenderdetails
-const loadTenderDetails = useCallback(async (id) => {
-    try {
+      try {
         setIsLoading(true);
 
-        const response = await getTenderDetails(id);
+        const response = await getTenders({
+          ...customFilters,
+          page,
+          page_size: pageSize,
+        });
 
-        setSelectedTender(response);
+        setTenderList(response.items);
 
-    } catch (error) {
-        console.error("Failed to load tender details:", error);
-    } finally {
+        setCurrentPage(response.page);
+        setTotalPages(response.total_pages);
+        setTotalItems(response.total);
+      } catch (err) {
+        console.error(err);
+      } finally {
         setIsLoading(false);
-    }
-}, []);
+      }
+    },
+    [filters, pageSize],
+  );
+
   const loadSavedTenders = useCallback(async () => {
-    const data = await getSavedTenders();
+    try {
+      setIsLoading(true);
 
-    setSavedTenders(data);
+      const response = await getSavedTenders();
+
+      setSavedTenders(response.items);
+    } catch (error) {
+      console.error("Failed to load saved tenders:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const saveTender = useCallback((tender) => {
-    setSavedTenders((prev) => {
-      if (prev.find((t) => t.id === tender.id)) return prev;
-      return [
-        ...prev,
-        {
-          ...tender,
-          saved: new Date().toLocaleDateString("en-US", {
-            month: "short",
-            day: "2-digit",
-            year: "numeric",
-          }),
-          folder: "all",
-        },
-      ];
+  const saveTenderById = useCallback(
+    async (tenderId) => {
+      try {
+        await saveTender(tenderId);
+        await loadSavedTenders();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [loadSavedTenders],
+  );
+
+  const removeSavedTenderById = useCallback(
+    async (tenderId) => {
+      try {
+        console.log("removing saved tender", tenderId);
+
+        await removeSavedTender(tenderId);
+
+        await loadSavedTenders();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [loadSavedTenders],
+  );
+  const clearTenderFilters = useCallback(() => {
+    setFilters({
+      q: "",
+
+      category: "",
+      organization: "",
+      location: "",
+      status: "",
+
+      publish_from: "",
+      publish_to: "",
+
+      closing_from: "",
+      closing_to: "",
+
+      sort_by: "publish_date",
+      sort_order: "desc",
     });
   }, []);
+  //loadtenderdetails
+  const loadTenderDetails = useCallback(async (id) => {
+    try {
+      setIsLoading(true);
 
-  const removeSavedTender = useCallback((id) => {
-    setSavedTenders((prev) => prev.filter((t) => t.id !== id));
+      const response = await getTenderDetails(id);
+
+      setSelectedTender(response);
+    } catch (error) {
+      console.error("Failed to load tender details:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const toggleBookmark = useCallback((id) => {
-    setBookmarkedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const loadChatHistory = useCallback(async () => {
+    try {
+      setChatLoading(true);
+
+      const data = await getChatHistory();
+
+      setChatHistory(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setChatLoading(false);
+    }
   }, []);
 
-  const addMessage = useCallback((msg) => {
-    setChatMessages((prev) => [...prev, msg]);
-  }, []);
+  const newChat = useCallback(async () => {
+    try {
+      const chat = await createChat();
 
-  const clearChat = useCallback(() => {
-    setChatMessages([]);
-    setCurrentChat({ id: Date.now().toString(), title: "New Conversation" });
-  }, []);
+      setCurrentChat(chat);
 
-  const deleteChatHistory = useCallback((id) => {
-    setChatHistory((prev) => prev.filter((c) => c.id !== id));
-  }, []);
+      setChatMessages([]);
 
-  const renameChatHistory = useCallback((id, title) => {
-    setChatHistory((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, title } : c)),
-    );
-  }, []);
+      await loadChatHistory();
 
-  const toggleStarChat = useCallback((id) => {
-    setChatHistory((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, starred: !c.starred } : c)),
-    );
+      return chat;
+    } catch (err) {
+      console.error(err);
+    }
+  }, [loadChatHistory]);
+
+  const openChat = useCallback(async (sessionId) => {
+    try {
+      setChatLoading(true);
+
+      const conversation = await getConversation(sessionId);
+
+      setCurrentChat({
+        session_id: conversation.session_id,
+        title: conversation.title,
+      });
+
+      setChatMessages(conversation.messages);
+    } catch (err) {
+      console.error("Failed to load conversation:", err);
+    } finally {
+      setChatLoading(false);
+    }
   }, []);
+const sendChatMessage = useCallback(async (message) => {
+    try {
+
+        if (!currentChat) return;
+
+        setIsAiTyping(true);
+
+        const response = await sendMessage(
+            currentChat.session_id,
+            message
+        );
+
+        setChatMessages((prev) => [
+            ...prev,
+            {
+                role: "user",
+                content: message,
+                created_at: new Date().toISOString(),
+            },
+            {
+                role: "assistant",
+                content: response.answer,
+                created_at: new Date().toISOString(),
+            },
+        ]);
+
+        setCurrentChat((prev) => ({
+            ...prev,
+            title: response.title,
+        }));
+
+        await loadChatHistory();
+
+    } catch (err) {
+
+        console.error("Failed to send message:", err);
+
+    } finally {
+
+        setIsAiTyping(false);
+
+    }
+
+}, [currentChat, loadChatHistory]);
+  useEffect(() => {
+    loadChatHistory();
+  }, [loadChatHistory]);
 
   const value = {
     currentUser,
@@ -250,17 +333,18 @@ const loadTenderDetails = useCallback(async (id) => {
     saveTender,
     removeSavedTender,
     bookmarkedIds,
-    toggleBookmark,
+    loadSavedTenders,
+    saveTenderById,
+    removeSavedTenderById,
+
     chatMessages,
     setChatMessages,
     currentChat,
     setCurrentChat,
-    addMessage,
-    clearChat,
+
     chatHistory,
-    deleteChatHistory,
-    renameChatHistory,
-    toggleStarChat,
+    loadChatHistory,
+
     dashboardStats,
     isLoading,
     setIsLoading,
@@ -272,20 +356,24 @@ const loadTenderDetails = useCallback(async (id) => {
     tenderActivity,
     selectedTender,
 
-filters,
-setFilters,
+    filters,
+    setFilters,
 
-currentPage,
-totalPages,
-totalItems,
+    currentPage,
+    totalPages,
+    totalItems,
 
-loadTenders,
-loadTenderDetails,
-clearTenderFilters,
-setSelectedCategory,
-selectedCategory,
-recentTenders
-
+    loadTenders,
+    loadTenderDetails,
+    clearTenderFilters,
+    setSelectedCategory,
+    selectedCategory,
+    recentTenders,
+    chatLoading,
+    setChatLoading,
+    newChat,
+    openChat,
+    sendChatMessage
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

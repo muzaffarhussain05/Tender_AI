@@ -80,7 +80,7 @@ class ChatBot:
                 query_embedding=query_vector,
                 top_k=100
             )
-
+            print(f"Vector Search Results: {len(results)}")
             if not results:
 
                 return {

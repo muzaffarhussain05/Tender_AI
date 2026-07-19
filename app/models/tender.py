@@ -1,11 +1,12 @@
 
 from sqlalchemy import Boolean, Column,Integer,String,DateTime,Text
 from app.base import Base
+from sqlalchemy.orm import relationship
 class Tender(Base):
 
     __tablename__ = "tenders"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, autoincrement=True, unique=True, primary_key=True)
 
     website = Column(Text)
 
@@ -17,7 +18,7 @@ class Tender(Base):
 
     reference_number = Column(String(500))
 
-    tender_no = Column(String(500),unique=True)
+    tender_no = Column(String(500))
 
     title = Column(String(500))
 
@@ -41,3 +42,9 @@ class Tender(Base):
     created_at = Column(DateTime)
 
     updated_at = Column(DateTime)
+
+    saved = relationship(
+    "SavedTender",
+    uselist=False,
+    cascade="all, delete-orphan",
+)
