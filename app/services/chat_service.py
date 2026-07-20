@@ -1,11 +1,11 @@
-from app.chat.chatbot import ChatBot
-from app.services.database_service import DatabaseService
 
+from app.services.database_service import DatabaseService
+from app.chat.chat_manager import ChatManager
 
 class ChatService:
 
     def __init__(self):
-        self.bot = ChatBot()
+        # self.bot = ChatBot()
         self.db = DatabaseService()
 
     def close(self):
@@ -53,7 +53,8 @@ class ChatService:
             question,
         )
 
-        response = self.bot.ask(question)
+        bot = ChatManager.get_bot()
+        response = bot.ask(question)
 
         answer = response["answer"]
         sources = response.get("sources", [])

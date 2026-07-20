@@ -112,7 +112,7 @@ class ChatBot:
         # -----------------------------
 
             context = self.context_builder.build(
-                results[:25]
+                results
             )
 
             # -----------------------------

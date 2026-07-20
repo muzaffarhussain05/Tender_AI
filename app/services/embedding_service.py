@@ -1,16 +1,13 @@
 
-from sentence_transformers import SentenceTransformer
 
+from app.core.model_manager import ModelManager
 
 class EmbeddingService:
 
     def __init__(self):
 
 
-        self.model = SentenceTransformer(
-            "BAAI/bge-small-en-v1.5",
-            device="cpu"
-        )
+        self.model = ModelManager.get_embedding_model()
 
     def generate_embeddings(self, texts):
 
