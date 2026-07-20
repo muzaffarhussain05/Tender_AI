@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  
 } from "react";
 import {
   getCategoryDistribution,
@@ -27,6 +28,7 @@ import {
   deleteChat,
   clearChat,
 } from "../api/chatApi";
+import { useNavigate } from "react-router-dom";
 
 const AppContext = createContext(null);
 
@@ -68,6 +70,7 @@ export function AppProvider({ children }) {
   const [totalPages, setTotalPages] = useState(1);
 
   const [totalItems, setTotalItems] = useState(0);
+  
   const [filters, setFilters] = useState({
     q: "",
 
@@ -259,6 +262,7 @@ export function AppProvider({ children }) {
 
   const openChat = useCallback(async (sessionId) => {
     try {
+     
       setChatLoading(true);
 
       const conversation = await getConversation(sessionId);

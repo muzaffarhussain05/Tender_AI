@@ -357,6 +357,122 @@ class DatabaseService:
         )
     
 
+    def search_tenders(self, filters, limit=100):
+
+        query = self.db.query(Tender)
+
+        # -----------------------------
+        # Location
+        # -----------------------------
+        if filters["location"]:
+
+            query = query.filter(
+                Tender.location.in_(
+                    filters["location"]
+                )
+            )
+
+        # -----------------------------
+        # Organization
+        # -----------------------------
+        if filters["organization"]:
+
+            query = query.filter(
+                Tender.organization.in_(
+                    filters["organization"]
+                )
+            )
+
+        # -----------------------------
+        # Status
+        # -----------------------------
+        if filters["status"]:
+
+            query = query.filter(
+                Tender.status.in_(
+                    filters["status"]
+                )
+            )
+
+        # -----------------------------
+        # Publish Date
+        # -----------------------------
+        publish = filters["publish_date"]
+
+        if publish:
+
+            query = query.filter(
+                Tender.publish_date >= publish["from"],
+                Tender.publish_date <= publish["to"]
+            )
+
+        # -----------------------------
+        # Closing Date
+        # -----------------------------
+        closing = filters["closing_date"]
+
+        if closing:
+
+            query = query.filter(
+                Tender.closing_date >= closing["from"],
+                Tender.closing_date <= closing["to"]
+            )
+
+        # -----------------------------
+        # Active / Expired
+        # -----------------------------
+        expired = filters["expired"]
+
+        if expired is False:
+
+            query = query.filter(
+                Tender.closing_date >= datetime.now()
+            )
+
+        elif expired is True:
+
+            query = query.filter(
+                Tender.closing_date < datetime.now()
+            )
+
+            rows = (
+        query
+        .order_by(Tender.publish_date.desc())
+        .limit(limit)
+        .all()
+    )
+
+        results = []
+
+        for row in rows:
+
+            results.append({
+
+                "tender_id": row.tender_no,
+
+                "title": row.title,
+
+                "organization": row.organization,
+
+                "department": row.department,
+
+                "location": row.location,
+
+                "publish_date": row.publish_date,
+
+                "closing_date": row.closing_date,
+
+                "status": row.status,
+
+                "category": row.category,
+
+                "text": row.document,
+
+                "score": 1.0
+            })
+
+        return results
+
     def get_distinct_organizations(self):
      
 

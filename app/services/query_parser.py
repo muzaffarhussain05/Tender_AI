@@ -330,11 +330,21 @@ class QueryParser:
         semantic_query=self._clean_query(semantic_query)
 
         status,expired,semantic_query=self._extract_status(semantic_query)
+        semantic_query = semantic_query.strip()
+        search_mode = (
+    "metadata"
+    if semantic_query == ""
+    else "hybrid"
+)
         filters["status"]=status
         filters["expired"]=expired
+        print("the search_mode is:", search_mode)
+
+
         return {
             "semantic_query":semantic_query,
             "filters":filters,
+            "search_mode": search_mode
         }
     
 

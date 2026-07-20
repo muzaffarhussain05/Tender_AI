@@ -7,6 +7,7 @@ from app.services.llm.groq_service import GroqService
 from app.chat.prompt_builder import PromptBuilder
 from app.chat.chat_session import ChatSession
 from app.chat.router import Router
+from app.services.database_service import DatabaseService
 class ChatBot:
 
     def __init__(self):
@@ -20,6 +21,7 @@ class ChatBot:
         self.query_parser = QueryParser()
 
         self.context_builder = ContextBuilder()
+        self.db = DatabaseService()
 
         self.llm = GroqService()
         self.chat=ChatSession()
@@ -61,62 +63,26 @@ class ChatBot:
             semantic_query = parsed_query[
                 "semantic_query"
             ]
-
-            # -----------------------------
-            # Generate Embedding
-            # -----------------------------
-
-            query_vector = (
-                self.embedding_service.generate_embeddings(
-                    semantic_query
-                )
-            )
-
-            # -----------------------------
-            # Vector Search
-            # -----------------------------
-
-            results = self.vector_service.search(
-                query_embedding=query_vector,
-                top_k=100
-            )
-            print(f"Vector Search Results: {len(results)}")
+            
+            if parsed_query["search_mode"]=="metadata":
+                print("MetaData Search")
+                results=self.metadata_search(parsed_query)
+            else:
+                print("Hybrid Search")
+                results=self.hybrid_search(parsed_query)
             if not results:
+                return{"answer":"No matching tenders found.","results":[]}
 
-                return {
-                    "answer": "No matching tenders found.",
-                    "results": []
-                }
-
+                    # -----------------------------
+            # Build Context
             # -----------------------------
-            # Apply Filters
-            # -----------------------------
-
-            results = self.filter_service.filter_tenders(
-                results=results,
-                parsed_query=parsed_query
-            )
-
-            if not results:
-
-                return {
-                    "answer": (
-                        "There is no related tender "
-                        "for your query."
-                    ),
-                    "results": []
-                }
-
-        # -----------------------------
-        # Build Context
-        # -----------------------------
 
             context = self.context_builder.build(
                 results
             )
 
             # -----------------------------
-            # Generate Final Answer
+            # Save Context
             # -----------------------------
 
             chat.context.update(
@@ -124,14 +90,21 @@ class ChatBot:
                 documents=results,
                 prompt_context=context
             )
+
         else:
-            results=chat.context.documents
-            context=chat.context.prompt_context
+
+            results = chat.context.documents
+            context = chat.context.prompt_context
+
+        # -----------------------------
+        # Generate Final Answer
+        # -----------------------------
 
         answer = self.llm.answer(
             question,
             context
         )
+
         chat.add_assistant_message(answer)
 
         return {
@@ -140,3 +113,41 @@ class ChatBot:
             "context": context,
             "parsed_query": parsed_query
         }
+
+    def metadata_search(self, parsed_query):
+
+        filters = parsed_query["filters"]
+
+        results = self.db.search_tenders(
+            filters=filters,
+            limit=100
+        )
+
+        return results    
+
+
+    def hybrid_search(self, parsed_query):
+
+        semantic_query = parsed_query["semantic_query"]
+
+        query_vector = self.embedding_service.generate_embeddings(
+            semantic_query
+        )
+
+        results = self.vector_service.search(
+            query_embedding=query_vector,
+            top_k=20
+        )
+
+        print(f"Vector Search Results: {len(results)}")
+        print(results)
+
+        if not results:
+            return []
+
+        # results = self.filter_service.filter_tenders(
+        #     results=results,
+        #     parsed_query=parsed_query
+        # )
+        print("After filtering:", len(results))
+        return results    
