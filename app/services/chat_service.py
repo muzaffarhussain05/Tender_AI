@@ -2,6 +2,7 @@
 from app.services.database_service import DatabaseService
 from app.chat.chat_manager import ChatManager
 
+from fastapi.encoders import jsonable_encoder
 class ChatService:
 
     def __init__(self):
@@ -51,18 +52,24 @@ class ChatService:
             session.id,
             "user",
             question,
+            tenders=[]  # Save an empty list for tenders for user messages
         )
 
         bot = ChatManager.get_bot()
         response = bot.ask(question)
+        
+
 
         answer = response["answer"]
-        sources = response.get("sources", [])
+        tenderslist = response.get("results", [])
+        tenders = jsonable_encoder(tenderslist)
+
 
         self.db.save_message(
             session.id,
             "assistant",
             answer,
+            tenders
         )
 
         messages = self.db.get_messages(session.id)
@@ -72,6 +79,8 @@ class ChatService:
             "title": session.title,
             "answer": answer,
             "messages": messages,
+            "tenders":tenders
+
             # "sources": sources,  # Include this if you want to return it
         }
 
@@ -98,15 +107,22 @@ class ChatService:
             raise Exception("Session not found")
 
         messages = self.db.get_messages(session_id)
+        for m in messages:
+            
+            print(m.role)
+            print(m.tenders)
 
         return {
             "session_id": session.id,
             "title": session.title,
+            
             "messages": [
                 {
                     "role": message.role,
                     "content": message.content,
-                    "created_at": message.created_at
+                    "created_at": message.created_at,
+                    "tenders":message.tenders
+                    
                 }
                 for message in messages
             ]
@@ -115,6 +131,7 @@ class ChatService:
 
     def rename_chat(self, session_id, title):
         return self.db.update_session_title(session_id, title)
+
 
 
     def delete_chat(self, session_id):

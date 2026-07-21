@@ -1,99 +1,15 @@
 from datetime import datetime
-import re
 
 
 class FilterService:
-
-    def __init__(self):
-
-        # -----------------------------
-        # Technical keywords
-        # -----------------------------
-        self.IT_KEYWORDS = {
-            "server",
-            "switch",
-            "router",
-            "ups",
-            "datacenter",
-            "storage",
-            "nas",
-            "san",
-            "cloud",
-            "fiber",
-            "lan",
-            "wan",
-            "bras",
-            "computing",
-        }
-
-        self.SECURITY_KEYWORDS = {
-            "firewall",
-            "ngfw",
-            "cctv",
-            "ids",
-            "ips",
-            "cyber",
-            "soc",
-            "encryption",
-            "siem",
-            "antivirus",
-            "threat",
-            "penetration",
-            "scada",
-            "network security",
-        }
-
-        self.COMMUNICATION_KEYWORDS = {
-            "antenna",
-            "amplifier",
-            "rf module",
-            "microwave",
-            "telecom",
-            "telecommunication",
-            "voice",
-            "radio",
-            "transceiver",
-            "satellite",
-            "frequency",
-            "generator",
-            "vccs",
-        }
-
-        self.ALL_TECH_KEYWORDS = (
-            self.IT_KEYWORDS
-            | self.SECURITY_KEYWORDS
-            | self.COMMUNICATION_KEYWORDS
-        )
-
-        # -----------------------------
-        # Noise / Physical keywords
-        # -----------------------------
-        self.PHYSICAL_TRAPS = {
-            "wall",
-            "paint",
-            "cement",
-            "brick",
-            "bricks",
-            "steel",
-            "pipe",
-            "road",
-            "bridge",
-            "building",
-            "construction",
-            "civil",
-            "furniture",
-            "chair",
-            "table",
-            "paper",
-            "stationery",
-            "toner",
-            "catering",
-            "janitorial",
-            "gate",
-            "guard",
-            "barbed",
-            "renovation",
-        }
+    """
+    Applies structured filters (location, organization, status, dates)
+    to candidate results. Ranking/relevance is left entirely to the
+    vector search's similarity score and the cross-encoder rerank score
+    -- this service no longer does its own keyword/trap scoring, since
+    that heuristic was excluding results that the vector search had
+    already correctly identified as relevant.
+    """
 
     # ======================================================
     # Helper Methods
@@ -330,108 +246,6 @@ class FilterService:
 
         return is_expired == expired
 
-    # ------------------------------------------------------
-
-    def _calculate_keyword_score(
-        self,
-        title,
-        category,
-        searchable,
-        parsed_query
-    ):
-
-        score = 0
-        keywords=parsed_query["semantic_query"].split()
-        
-
-        title = self._normalize(title)
-        category = self._normalize(category)
-
-        for keyword in keywords:
-
-            pattern = rf"\b{re.escape(keyword)}\b"
-
-            if not re.search(
-                pattern,
-                searchable,
-            ):
-                continue
-
-            if (
-                re.search(pattern, title)
-                or re.search(pattern, category)
-            ):
-
-                score += 3
-
-            else:
-
-                score += 1
-
-        return score
-
-    # ------------------------------------------------------
-
-    def _calculate_trap_score(
-        self,
-        searchable,
-    ):
-
-        score = 0
-
-        for trap in self.PHYSICAL_TRAPS:
-
-            pattern = rf"\b{re.escape(trap)}\b"
-
-            if re.search(
-                pattern,
-                searchable,
-            ):
-
-                score += 2
-
-        return score
-
-    # ------------------------------------------------------
-
-    def _calculate_final_score(
-        self,
-        result,
-        parsed_query
-    ):
-
-        searchable = self._build_searchable_text(
-            result
-        )
-
-        keyword_score = self._calculate_keyword_score(
-
-            result.get("title"),
-
-            result.get("category"),
-
-            searchable,
-            parsed_query
-
-        )
-
-        if keyword_score == 0:
-            return None
-
-        trap_score = self._calculate_trap_score(
-            searchable
-        )
-
-        final_score = keyword_score - trap_score
-
-        if final_score <= 0:
-            return None
-
-        result["keyword_score"] = keyword_score
-        result["trap_score"] = trap_score
-        result["final_relevance_score"] = final_score
-
-        return final_score
     # ======================================================
     # Main Filtering Pipeline
     # ======================================================
@@ -448,12 +262,14 @@ class FilterService:
         )
 
         filtered = []
-        
 
         for result in results:
 
             # -----------------------------
             # Structured Filters
+            # (these are still hard filters -- location, org, status and
+            # dates are explicit, unambiguous user constraints, so it's
+            # correct to exclude on them)
             # -----------------------------
 
             if not self._matches_location(
@@ -492,32 +308,16 @@ class FilterService:
             ):
                 continue
 
-            # -----------------------------
-            # Keyword Scoring
-            # -----------------------------
-
-            score = self._calculate_final_score(
-                result,
-                parsed_query
-            )
-
-            if score is None:
-                continue
-
             filtered.append(result)
 
         # -----------------------------
         # Final Ranking
+        # (relevance is left entirely to the vector search / reranker --
+        # this service only applies the hard structured filters above)
         # -----------------------------
-        
+
         filtered.sort(
             key=lambda x: (
-
-                # Custom keyword relevance
-                x.get(
-                    "final_relevance_score",
-                    0
-                ),
 
                 # Cross Encoder score
                 x.get(
@@ -542,4 +342,4 @@ class FilterService:
             reverse=True,
         )
 
-        return filtered    
+        return filtered

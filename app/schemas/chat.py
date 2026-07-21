@@ -19,6 +19,7 @@ class ChatMessageResponse(BaseModel):
     role: str
     content: str
     created_at: datetime
+    tenders: list[dict] | None = None
 
     class Config:
         from_attributes = True
@@ -65,6 +66,7 @@ class MessageItem(BaseModel):
     role: str
     content: str
     created_at: datetime
+    tenders: list[dict] | None = None
     
 class ConversationResponse(BaseModel):
     session_id: int

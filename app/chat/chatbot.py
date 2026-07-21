@@ -140,14 +140,14 @@ class ChatBot:
         )
 
         print(f"Vector Search Results: {len(results)}")
-        print(results)
+        
 
         if not results:
             return []
 
-        # results = self.filter_service.filter_tenders(
-        #     results=results,
-        #     parsed_query=parsed_query
-        # )
+        results = self.filter_service.filter_tenders(
+            results=results,
+            parsed_query=parsed_query
+        )
         print("After filtering:", len(results))
         return results    

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from sqlalchemy.orm import  relationship
-from sqlalchemy import Column, ForeignKey,Integer,DateTime, String,Text
+from sqlalchemy import Column, ForeignKey,Integer,DateTime, String,Text,JSON
 from app.base import Base
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
@@ -22,6 +22,7 @@ class ChatMessage(Base):
     content = Column(Text, nullable=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
+    tenders = Column(JSON, nullable=True)
 
     session = relationship(
         "ChatSession",

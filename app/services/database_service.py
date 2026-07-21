@@ -68,12 +68,15 @@ class DatabaseService:
 
         return session
     
-    def save_message(self, session_id, role, content):
+    def save_message(self, session_id, role, content,tenders):
+
+        
 
         message = ChatMessage(
             session_id=session_id,
             role=role,
-            content=content
+            content=content,
+            tenders=tenders
         )
 
         self.db.add(message)
