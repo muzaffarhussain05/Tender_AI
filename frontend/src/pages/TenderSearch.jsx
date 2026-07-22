@@ -318,12 +318,11 @@ export default function TenderSearch() {
                       <button
                         onClick={async () => {
                           if (bookmarkedIds.has(t.id)) {
-                            console.log("removing");
-                            console.log(t);
+                            
 
                             await removeSavedTenderById(t.id);
                           } else {
-                            console.log("saving");
+                            
 
                             await saveTenderById(t.id);
                           }

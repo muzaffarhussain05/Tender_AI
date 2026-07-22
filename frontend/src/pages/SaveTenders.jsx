@@ -19,20 +19,20 @@ import Header from "../components/Header";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 
-const folders = [
-  { id: "all", label: "All Tenders", icon: Bookmark },
-  { id: "priority", label: "Priority", icon: AlertTriangle },
-  { id: "it", label: "IT Projects", icon: FolderOpen },
-  { id: "q4", label: "Q4 Targets", icon: Calendar },
-  { id: "awarded", label: "Awarded", icon: CheckCircle2 },
-];
+// const folders = [
+//   { id: "all", label: "All Tenders", icon: Bookmark },
+//   { id: "priority", label: "Priority", icon: AlertTriangle },
+//   { id: "it", label: "IT Projects", icon: FolderOpen },
+//   { id: "q4", label: "Q4 Targets", icon: Calendar },
+//   { id: "awarded", label: "Awarded", icon: CheckCircle2 },
+// ];
 
-  const statusColor = {
-    Published: "bg-green-100 text-green-700",
-    PublishedCorrigendum: "bg-yellow-100 text-yellow-700",
-    Cancelled: "bg-red-100 text-red-700",
-    Awarded: "bg-blue-100 text-blue-700",
-  };
+const statusColor = {
+  Published: "bg-green-100 text-green-700",
+  PublishedCorrigendum: "bg-yellow-100 text-yellow-700",
+  Cancelled: "bg-red-100 text-red-700",
+  Awarded: "bg-blue-100 text-blue-700",
+};
 
 export default function SavedTenders() {
   const {
@@ -49,25 +49,25 @@ export default function SavedTenders() {
     new Set(["RFP-DXB-2024", "ENS-2024-007"]),
   );
   const navigate = useNavigate();
-  const folderCounts = folders.reduce((acc, f) => {
-    acc[f.id] =
-      f.id === "all"
-        ? savedTenders.length
-        : savedTenders.filter((t) => t.folder === f.id).length;
-    return acc;
-  }, {});
+  // const folderCounts = folders.reduce((acc, f) => {
+  //   acc[f.id] =
+  //     f.id === "all"
+  //       ? savedTenders.length
+  //       : savedTenders.filter((t) => t.folder === f.id).length;
+  //   return acc;
+  // }, {});
 
   useEffect(() => {
     loadSavedTenders();
   }, []);
 
-  const filtered = savedTenders.filter(
-    (t) =>
-      (activeFolder === "all" || t.folder === activeFolder) &&
-      (search === "" ||
-        t.title.toLowerCase().includes(search.toLowerCase()) ||
-        t.organization.toLowerCase().includes(search.toLowerCase())),
-  );
+  // const filtered = savedTenders.filter(
+  //   (t) =>
+  //     (activeFolder === "all" || t.folder === activeFolder) &&
+  //     (search === "" ||
+  //       t.title.toLowerCase().includes(search.toLowerCase()) ||
+  //       t.organization.toLowerCase().includes(search.toLowerCase())),
+  // );
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -101,7 +101,7 @@ export default function SavedTenders() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {filtered.length === 0 ? (
+            {savedTenders.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <div className="w-20 h-20 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center mb-4">
                   <FolderOpen size={28} className="text-gray-300" />
@@ -131,17 +131,17 @@ export default function SavedTenders() {
                       Tender Details
                     </th>
                     <th className="text-left text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider px-4 py-3">
-                     	Published Date
+                      Published Date
                     </th>
                     <th className="text-left text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider px-4 py-3">
-                     	Closing Date
+                      Closing Date
                     </th>
-                    
+
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((t, i) => (
+                  {savedTenders.map((t, i) => (
                     <motion.tr
                       key={t.id}
                       initial={{ opacity: 0 }}
@@ -151,10 +151,10 @@ export default function SavedTenders() {
                     >
                       <td className="px-4 py-4">
                         <span
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColor[t.status]}`}
-                    >
-                      {t.status}
-                    </span>
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColor[t.status]}`}
+                        >
+                          {t.status}
+                        </span>
                       </td>
                       <td className="px-4 py-4">
                         <div className="text-sm font-medium text-[#0b1c30]">
@@ -164,21 +164,15 @@ export default function SavedTenders() {
                           {t.location}
                         </div>
                       </td>
-                       <td className="px-4 py-3 text-xs font-semibold text-[#0058be] hidden xl:table-cell">
+                      <td className="px-4 py-3 text-xs font-semibold text-[#0058be] hidden xl:table-cell">
                         {new Date(t.publish_date).toISOString().split("T")[0]}
                       </td>
-                        <td className="px-4 py-4">
-                        
-                          <span className="text-xs font-semibold text-[#da0c0c]">
-                            {
-                              new Date(t.closing_date)
-                                .toISOString()
-                                .split("T")[0]
-                            }
-                          </span>
-                     
+                      <td className="px-4 py-4">
+                        <span className="text-xs font-semibold text-[#da0c0c]">
+                          {new Date(t.closing_date).toISOString().split("T")[0]}
+                        </span>
                       </td>
-                      
+
                       <td className="px-3 py-4">
                         <div className="flex gap-1">
                           <button
@@ -210,11 +204,12 @@ export default function SavedTenders() {
             )}
           </div>
 
-          {filtered.length > 0 && (
+          {savedTenders.length > 0 && (
             <div className="border-t border-gray-200 bg-white shrink-0">
               <div className="flex items-center px-5 py-2.5">
                 <span className="text-xs text-[#6b7280]">
-                  Showing 1-{filtered.length} of {savedTenders.length} tenders
+                  Showing 1-{savedTenders.length} of {savedTenders.length}{" "}
+                  tenders
                 </span>
               </div>
             </div>

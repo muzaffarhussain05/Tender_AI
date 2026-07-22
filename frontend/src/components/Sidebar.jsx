@@ -32,10 +32,10 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
   const navigate = useNavigate();
-  const { chatHistory, currentUser,openChat } = useApp();
+  const { chatHistory, currentUser, openChat } = useApp();
 
   const filtered = chatHistory?.filter((item) =>
-    item?.title?.toLowerCase()?.includes(historySearch.toLowerCase())
+    item?.title?.toLowerCase()?.includes(historySearch.toLowerCase()),
   );
 
   const grouped = filtered.reduce((acc, item) => {
@@ -43,6 +43,11 @@ export default function Sidebar() {
     acc[item.group].push(item);
     return acc;
   }, {});
+
+  const handlenavigate = async (item) => {
+    await openChat(item);
+    navigate("/ai-assistant");
+  };
 
   return (
     <motion.div
@@ -147,10 +152,13 @@ export default function Sidebar() {
                   {items.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => openChat(item.id)}
+                      onClick={() => handlenavigate(item.id)}
                       className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-[#45464d] hover:bg-gray-100 rounded-md text-left"
                     >
-                      <MessageSquare size={12} className="text-gray-400 shrink-0" />
+                      <MessageSquare
+                        size={12}
+                        className="text-gray-400 shrink-0"
+                      />
                       <span className="truncate">{item.title}</span>
                     </button>
                   ))}
@@ -204,8 +212,12 @@ export default function Sidebar() {
                 {currentUser.initials}
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-medium text-[#0b1c30] truncate">{currentUser.name}</div>
-                <div className="text-[9px] text-[#6b7280] truncate">{currentUser.role}</div>
+                <div className="text-xs font-medium text-[#0b1c30] truncate">
+                  {currentUser.name}
+                </div>
+                <div className="text-[9px] text-[#6b7280] truncate">
+                  {currentUser.role}
+                </div>
               </div>
             </motion.div>
           )}

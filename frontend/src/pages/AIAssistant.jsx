@@ -26,11 +26,11 @@ const suggestions = [
 ];
 
 const statusColor = {
-  OPEN: "bg-green-100 text-green-700",
-  "CLOSING SOON": "bg-orange-100 text-orange-700",
-  AWARDED: "bg-blue-100 text-blue-700",
+  Published: "bg-green-100 text-green-700",
+  PublishedCorrigendum: "bg-yellow-100 text-yellow-700",
+  Cancelled: "bg-red-100 text-red-700",
+  Awarded: "bg-blue-100 text-blue-700",
 };
-
 const intelligenceFeed = [
   {
     id: "DXB-IT-2024-001",
@@ -68,45 +68,22 @@ export default function AIAssistant() {
     setIsAiTyping,
     newChat,
     sendChatMessage,
+    openChat,
+    bookmarkedIds,
+    removeSavedTenderById,
+    saveTenderById,
   } = useApp();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
- 
-  
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, isAiTyping]);
 
-
-  console.log(chatMessages);
-  
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    const userMsg = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input.trim(),
-      timestamp: new Date(),
-    };
-    addMessage(userMsg);
-    setInput("");
-    setIsAiTyping(true);
-    setTimeout(() => {
-      addMessage({
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `I'm analyzing your query: **"${userMsg?.content}"**\n\nBased on current tender data, I found relevant opportunities matching your profile:\n\n- **15 matching tenders** found in the database\n- **Top match score**: 98% for DXB-IT-2024-001\n- **Recommended action**: Review eligibility criteria before Oct 12 deadline`,
-        timestamp: new Date(),
-      });
-      setIsAiTyping(false);
-    }, 1800);
-  };
-
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      handleSend();
     }
   };
 
@@ -242,7 +219,6 @@ export default function AIAssistant() {
                               })}
                             </span>
                             <div className="flex-1" />
-                            
                           </div>
                         </div>
                         {/* Tender Cards */}
@@ -250,7 +226,7 @@ export default function AIAssistant() {
                           <div className="space-y-2">
                             {msg?.tenders.map((card) => (
                               <motion.div
-                                key={card.id}
+                                key={card.tender_id}
                                 whileHover={{ scale: 1.01 }}
                                 className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all"
                               >
@@ -263,47 +239,85 @@ export default function AIAssistant() {
                                         {card.status}
                                       </span>
                                       <span className="text-[10px] text-[#6b7280]">
-                                        #{card.id}
+                                        #{card.tender_id}
                                       </span>
                                     </div>
                                     <h4 className="text-sm font-semibold text-[#0b1c30]">
                                       {card.title}
                                     </h4>
                                   </div>
-                                  <div className="shrink-0 text-right">
+                                  <div className="shrink-0 text-right flex items-center justify-center gap-2">
                                     <div className="text-[10px] text-[#6b7280]">
                                       MATCH
                                     </div>
                                     <div className="text-lg font-bold text-[#0058be]">
                                       {card.score.toFixed(2)}%
                                     </div>
+                                    <div className="px-3 ml-4 py-1.5 border  border-gray-200 text-xs rounded-lg hover:bg-gray-50 transition-colors text-[#45464d] flex items-center gap-1">
+                                      <button
+                                        onClick={async () => {
+                                          if (
+                                            bookmarkedIds.has(card.tender_id)
+                                          ) {
+                                            console.log("removing");
+
+                                            await removeSavedTenderById(
+                                              card.tender_id,
+                                            );
+                                          } else {
+                                            console.log("saving");
+
+                                            await saveTenderById(
+                                              card.tender_id,
+                                            );
+                                          }
+                                        }}
+                                        className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                                      >
+                                        {bookmarkedIds.has(card.tender_id) ? (
+                                          <BookmarkCheck className="w-5 h-5 text-[#0058be]" />
+                                        ) : (
+                                          <Bookmark className="w-5 h-5" />
+                                        )}
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[#6b7280] mb-3">
                                   <div className="flex items-center gap-1">
-                                    <Building2 size={11} /> {card.org}
+                                    <Building2 size={11} /> {card.organization}
                                   </div>
                                   <div className="flex items-center gap-1">
                                     <MapPin size={11} /> {card.location}
                                   </div>
-                                  <div className="flex items-center gap-1">
-                                    <Calendar size={11} /> Closes {card.closing}
+                                  <div className="flex items-center gap-1 text-[#0058be]">
+                                    <Calendar size={11} /> Publish{" "}
+                                    {
+                                      new Date(card.publish_date)
+                                        .toISOString()
+                                        .split("T")[0]
+                                    }
                                   </div>
-                                  <div className="flex items-center gap-1">
-                                    <DollarSign size={11} /> {card.budget}
+                                  <div className="flex items-center  gap-1 text-[#da0c0c]">
+                                    <Calendar size={11} /> Closes{" "}
+                                    {
+                                      new Date(card.publish_date)
+                                        .toISOString()
+                                        .split("T")[0]
+                                    }
                                   </div>
                                 </div>
-                                <div className="flex gap-2">
-                                  <button className="flex-1 py-1.5 bg-[#0058be] text-white text-xs rounded-lg hover:bg-[#0047a1] transition-colors flex items-center justify-center gap-1">
+                                {/* <div className="flex gap-2"> */}
+                                {/* <button className="flex-1 py-1.5 bg-[#0058be] text-white text-xs rounded-lg hover:bg-[#0047a1] transition-colors flex items-center justify-center gap-1">
                                     <ExternalLink size={11} /> Open Details
-                                  </button>
-                                  <button className="px-3 py-1.5 border border-gray-200 text-xs rounded-lg hover:bg-gray-50 transition-colors text-[#45464d] flex items-center gap-1">
+                                  </button> */}
+                                {/* <button className="px-3 py-1.5 border border-gray-200 text-xs rounded-lg hover:bg-gray-50 transition-colors text-[#45464d] flex items-center gap-1">
                                     <Bookmark size={11} /> Save
                                   </button>
                                   <button className="px-3 py-1.5 border border-gray-200 text-xs rounded-lg hover:bg-gray-50 transition-colors text-[#45464d]">
                                     <Share2 size={11} />
-                                  </button>
-                                </div>
+                                  </button> */}
+                                {/* </div> */}
                               </motion.div>
                             ))}
                           </div>
@@ -347,7 +361,6 @@ export default function AIAssistant() {
           <div className="relative bg-[#eff4ff] border border-[#c6c6cd] rounded-xl overflow-hidden focus-within:border-[#0058be] transition-colors">
             <textarea
               value={input}
-              
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask Tender AI anything..."
@@ -374,8 +387,6 @@ export default function AIAssistant() {
           </div>
         </div>
       </div>
-
-   
     </div>
   );
 }

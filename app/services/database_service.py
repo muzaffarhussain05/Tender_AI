@@ -438,7 +438,7 @@ class DatabaseService:
                 Tender.closing_date < datetime.now()
             )
 
-            rows = (
+        rows = (
         query
         .order_by(Tender.publish_date.desc())
         .limit(limit)
@@ -446,6 +446,7 @@ class DatabaseService:
     )
 
         results = []
+        print("rows",rows)
 
         for row in rows:
 

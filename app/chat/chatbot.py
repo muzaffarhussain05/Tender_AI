@@ -117,6 +117,7 @@ class ChatBot:
     def metadata_search(self, parsed_query):
 
         filters = parsed_query["filters"]
+        
 
         results = self.db.search_tenders(
             filters=filters,
@@ -138,7 +139,7 @@ class ChatBot:
             query_embedding=query_vector,
             top_k=20
         )
-
+        print("from vector search",results)    
         print(f"Vector Search Results: {len(results)}")
         
 
@@ -150,4 +151,5 @@ class ChatBot:
             parsed_query=parsed_query
         )
         print("After filtering:", len(results))
+        
         return results    

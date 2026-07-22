@@ -4,7 +4,6 @@ import {
   useState,
   useCallback,
   useEffect,
-  
 } from "react";
 import {
   getCategoryDistribution,
@@ -70,7 +69,7 @@ export function AppProvider({ children }) {
   const [totalPages, setTotalPages] = useState(1);
 
   const [totalItems, setTotalItems] = useState(0);
-  
+
   const [filters, setFilters] = useState({
     q: "",
 
@@ -113,6 +112,7 @@ export function AppProvider({ children }) {
     }
   }, []);
   const bookmarkedIds = new Set(savedTenders.map((t) => t.tender_id));
+
   //recent tenders on dashboard
 
   // const loadRecentTenders = useCallback(async () => {
@@ -260,69 +260,65 @@ export function AppProvider({ children }) {
     }
   }, [loadChatHistory]);
 
-  const openChat = useCallback(async (sessionId) => {
-    try {
-     
-      setChatLoading(true);
+  const openChat = useCallback(
+    async (sessionId) => {
+      try {
+        setChatLoading(true);
 
-      const conversation = await getConversation(sessionId);
+        const conversation = await getConversation(sessionId);
 
-      setCurrentChat({
-        session_id: conversation.session_id,
-        title: conversation.title,
-      });
+        setCurrentChat({
+          session_id: conversation.session_id,
+          title: conversation.title,
+        });
 
-      setChatMessages(conversation.messages);
-    } catch (err) {
-      console.error("Failed to load conversation:", err);
-    } finally {
-      setChatLoading(false);
-    }
-  }, []);
-const sendChatMessage = useCallback(async (message) => {
-    try {
-
+        setChatMessages(conversation.messages);
+      } catch (err) {
+        console.error("Failed to load conversation:", err);
+      } finally {
+        setChatLoading(false);
+      }
+    },
+    [currentChat],
+  );
+  const sendChatMessage = useCallback(
+    async (message) => {
+      try {
         if (!currentChat) return;
 
         setIsAiTyping(true);
 
-        const response = await sendMessage(
-            currentChat.session_id,
-            message
-        );
+        const response = await sendMessage(currentChat.session_id, message);
 
         setChatMessages((prev) => [
-            ...prev,
-            {
-                role: "user",
-                content: message,
-                created_at: new Date().toISOString(),
-            },
-            {
-                role: "assistant",
-                content: response.answer,
-                created_at: new Date().toISOString(),
-            },
+          ...prev,
+          {
+            role: "user",
+            content: message,
+            created_at: new Date().toISOString(),
+          },
+          {
+            role: "assistant",
+            content: response.answer,
+            created_at: new Date().toISOString(),
+          },
         ]);
 
         setCurrentChat((prev) => ({
-            ...prev,
-            title: response.title,
+          ...prev,
+          title: response.title,
         }));
 
         await loadChatHistory();
-
-    } catch (err) {
-
+        await openChat(currentChat.session_id);
+      } catch (err) {
         console.error("Failed to send message:", err);
-
-    } finally {
-
+      } finally {
         setIsAiTyping(false);
-
-    }
-
-}, [currentChat, loadChatHistory]);
+      }
+    },
+    [currentChat, loadChatHistory],
+  );
   useEffect(() => {
     loadChatHistory();
   }, [loadChatHistory]);
@@ -377,7 +373,7 @@ const sendChatMessage = useCallback(async (message) => {
     setChatLoading,
     newChat,
     openChat,
-    sendChatMessage
+    sendChatMessage,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
