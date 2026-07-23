@@ -26,8 +26,7 @@ QUERY_STOPWORDS = {
     "and",
     "or",
 
-    "tenders",
-    "tender",
+   
 
     "find",
     "show",

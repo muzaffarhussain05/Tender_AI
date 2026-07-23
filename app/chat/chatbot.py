@@ -60,9 +60,9 @@ class ChatBot:
                 question
             )
 
-            semantic_query = parsed_query[
-                "semantic_query"
-            ]
+            # semantic_query = parsed_query[
+            #     "semantic_query"
+            # ]
             
             if parsed_query["search_mode"]=="metadata":
                 print("MetaData Search")
@@ -117,11 +117,12 @@ class ChatBot:
     def metadata_search(self, parsed_query):
 
         filters = parsed_query["filters"]
+        print("filters from meta",filters)
         
 
         results = self.db.search_tenders(
             filters=filters,
-            limit=100
+            limit=20
         )
 
         return results    

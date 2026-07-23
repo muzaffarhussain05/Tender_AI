@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from app.database import init_db
 from app.api.dashboard import router as dashboard_router
 from app.api.tenders import router as tender_router
-from app.api.assistant import router as assistant_router
+# from app.api.assistant import router as assistant_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.saved_tenders import router as saved_tender_router
 from app.api.chat import router as chat_router
@@ -33,10 +33,10 @@ app.include_router(
     tender_router,
     prefix="/api/v1"
 )
-app.include_router(
-    assistant_router,
-    prefix="/api/v1"
-)
+# app.include_router(
+#     assistant_router,
+#     prefix="/api/v1"
+# )
 app.include_router(saved_tender_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
 init_db()

@@ -42,7 +42,7 @@ async def send_message(request: ChatRequest):
         raise HTTPException(
             status_code=404,
             detail=str(e)
-        )
+        )  
 
     except Exception as e:
 

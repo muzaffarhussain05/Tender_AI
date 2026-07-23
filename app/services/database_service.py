@@ -8,6 +8,8 @@ from app.models import (
     ChatMessage,
     ChatSession
 )
+from sqlalchemy import or_
+
 
 
 logger = logging.getLogger(__name__)
@@ -363,17 +365,16 @@ class DatabaseService:
     def search_tenders(self, filters, limit=100):
 
         query = self.db.query(Tender)
+        print(filters)
 
         # -----------------------------
         # Location
         # -----------------------------
+     
         if filters["location"]:
+            conditions=[Tender.location.ilike(f"%{loc}%") for loc in filters["location"]]
 
-            query = query.filter(
-                Tender.location.in_(
-                    filters["location"]
-                )
-            )
+            query = query.filter(or_(*conditions))
 
         # -----------------------------
         # Organization

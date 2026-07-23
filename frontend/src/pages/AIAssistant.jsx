@@ -301,7 +301,7 @@ export default function AIAssistant() {
                                   <div className="flex items-center  gap-1 text-[#da0c0c]">
                                     <Calendar size={11} /> Closes{" "}
                                     {
-                                      new Date(card.publish_date)
+                                      new Date(card.closing_date)
                                         .toISOString()
                                         .split("T")[0]
                                     }
