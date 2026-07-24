@@ -206,3 +206,39 @@ async def clear_chat(session_id: int):
 
     finally:
         service.close()
+
+
+
+
+@router.delete(
+    "/{itemid}",
+    
+    summary="Remove Chat ",
+)
+async def remove_saved_tender(itemid: int):
+
+    service = ChatService()
+
+    try:
+
+        deleted = service.delete_chat(itemid)
+
+
+        if not deleted:
+                    
+                    raise HTTPException(
+                        status_code=404,
+                        
+                        detail="Saved tender not found.",
+                    )
+
+
+        return {
+                        "message": "Chat Removed successfully"
+                    }
+        
+
+       
+
+    finally:
+        service.close()

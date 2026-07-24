@@ -46,7 +46,11 @@ export const renameChat = async (sessionId, title) => {
 
   return res.data;
 };
+export const removeChat=async (itemid) =>{
+  const res=await api.delete(`/chat/${itemid}`)
 
+  return res.data
+}
 /**
  * Delete chat
  */
@@ -62,3 +66,4 @@ export const clearChat = async (sessionId) => {
   const res = await api.delete(`/chat/${sessionId}/messages`);
   return res.data;
 };
+

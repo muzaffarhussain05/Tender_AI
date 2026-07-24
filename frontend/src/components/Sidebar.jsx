@@ -12,8 +12,11 @@ import {
   ChevronRight,
   FileText,
   HelpCircle,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 
 const navItems = [
@@ -25,15 +28,16 @@ const navItems = [
 
 const bottomItems = [
   { to: "/settings", icon: Settings, label: "Settings" },
-  { to: "/analytics", icon: HelpCircle, label: "Support" },
+  // { to: "/analytics", icon: HelpCircle, label: "Support" },
 ];
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
   const navigate = useNavigate();
-  const { chatHistory, currentUser, openChat } = useApp();
-
+  const { chatHistory, currentUser, openChat, removeChatByTenderId } =
+    useApp();
+  const [openMenu, setOpenMenu] = useState(null);
   const filtered = chatHistory?.filter((item) =>
     item?.title?.toLowerCase()?.includes(historySearch.toLowerCase()),
   );
@@ -43,12 +47,23 @@ export default function Sidebar() {
     acc[item.group].push(item);
     return acc;
   }, {});
-
+  const menuRef = useRef(null);
   const handlenavigate = async (item) => {
     await openChat(item);
     navigate("/ai-assistant");
   };
 
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (openMenu && menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenMenu(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openMenu]);
   return (
     <motion.div
       animate={{ width: collapsed ? 64 : 220 }}
@@ -127,7 +142,7 @@ export default function Sidebar() {
             exit={{ opacity: 0 }}
             className="flex flex-col mt-4 px-2 flex-1 min-h-0"
           >
-            <div className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider px-2 mb-2">
+            <div className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wider px-2 mb-2 ">
               Conversation History
             </div>
             <div className="relative mb-2">
@@ -150,17 +165,65 @@ export default function Sidebar() {
                     {group}
                   </div>
                   {items.map((item) => (
-                    <button
+                    <div
                       key={item.id}
-                      onClick={() => handlenavigate(item.id)}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-[#45464d] hover:bg-gray-100 rounded-md text-left"
+                      className="relative group"
+                      ref={openMenu === item.id ? menuRef : null}
                     >
-                      <MessageSquare
-                        size={12}
-                        className="text-gray-400 shrink-0"
-                      />
-                      <span className="truncate">{item.title}</span>
-                    </button>
+                      <button
+                        onClick={() => handlenavigate(item.id)}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 pr-8 text-xs text-[#45464d] hover:bg-gray-100 rounded-md text-left transition-colors"
+                      >
+                        <MessageSquare
+                          size={12}
+                          className="text-gray-400 shrink-0"
+                        />
+
+                        <span className="truncate flex-1">{item.title}</span>
+                      </button>
+
+                      {/* Three dots */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenu(openMenu === item.id ? null : item.id);
+                        }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-gray-200 transition-all duration-200"
+                      >
+                        <MoreHorizontal size={14} />
+                      </button>
+
+                      {/* Dropdown */}
+                      {openMenu === item.id && (
+                        <div className="absolute right-1 top-8 z-20 w-36 rounded-lg border bg-white shadow-lg py-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("Rename", item.id);
+                              setOpenMenu(null);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100"
+                          >
+                            <Pencil size={14} />
+                            Rename
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("Delete", item.id);
+                              removeChatByTenderId(item.id);
+
+                              setOpenMenu(null);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 size={14} />
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               ))}
@@ -223,7 +286,7 @@ export default function Sidebar() {
           )}
         </AnimatePresence>
 
-        <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors">
+        {/* <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors">
           <LogOut size={17} />
           <AnimatePresence>
             {!collapsed && (
@@ -237,7 +300,7 @@ export default function Sidebar() {
               </motion.span>
             )}
           </AnimatePresence>
-        </button>
+        </button> */}
       </div>
 
       {/* Collapse toggle */}

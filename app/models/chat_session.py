@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy.orm import  relationship
-from sqlalchemy import Column, ForeignKey,Integer,String,DateTime
+from sqlalchemy import Column, ForeignKey,Integer,String,DateTime, Text
 from app.base import Base
 
 class ChatSession(Base):
@@ -17,6 +17,7 @@ class ChatSession(Base):
     title = Column(String(255), default="New Chat")
 
     created_at = Column(DateTime, default=datetime.now)
+    # context = Column(Text, nullable=True)
 
     updated_at = Column(
         DateTime,

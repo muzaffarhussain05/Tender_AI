@@ -122,7 +122,7 @@ class ChatBot:
 
         results = self.db.search_tenders(
             filters=filters,
-            limit=20
+            limit=10
         )
 
         return results    
@@ -138,7 +138,7 @@ class ChatBot:
 
         results = self.vector_service.search(
             query_embedding=query_vector,
-            top_k=20
+            top_k=10
         )
         print("from vector search",results)    
         print(f"Vector Search Results: {len(results)}")

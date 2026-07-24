@@ -11,7 +11,9 @@ import {
   ExternalLink,
   Download,
   ChevronRight,
+  ArrowDownLeft,
 } from "lucide-react";
+
 import { useCallback, useEffect } from "react";
 import Header from "../components/Header";
 import { useApp } from "../context/AppContext";
@@ -95,19 +97,18 @@ const fadeUp = {
 export default function Dashboard() {
   const {
     dashboardStats,
-    
+
     currentUser,
     isLoading,
     loadDashboard,
     loadTenders,
     categoryDistribution,
     tenderActivity,
-    recentTenders
+    recentTenders,
   } = useApp();
 
   useEffect(() => {
     loadDashboard();
-   
   }, []);
 
   const pieData =
@@ -122,8 +123,6 @@ export default function Dashboard() {
       tenders: item.tenders,
     })) ?? [];
 
- 
-    
   const stats = [
     {
       label: "Total Tenders",
@@ -191,6 +190,7 @@ export default function Dashboard() {
               <div className="text-2xl font-bold text-[#0b1c30]">{s.value}</div>
               <div className="flex items-center gap-1 text-xs text-green-600">
                 <ArrowUpRight size={12} />
+                <ArrowDownLeft size={12} />
                 {s.delta}
               </div>
             </motion.div>

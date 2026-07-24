@@ -600,4 +600,21 @@ class DatabaseService:
 
         return True
 
+    def get_context(self, session_id):
+
+        session = self.get_session(session_id)
+
+        return session.context
+
+
+    def update_context(self, session_id, context):
+
+        session = self.get_session(session_id)
+
+        session.context = context
+
+        session.updated_at = datetime.now()
+
+        self.db.commit()
+
     

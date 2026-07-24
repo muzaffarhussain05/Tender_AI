@@ -26,6 +26,7 @@ import {
   renameChat,
   deleteChat,
   clearChat,
+  removeChat,
 } from "../api/chatApi";
 import { useNavigate } from "react-router-dom";
 
@@ -195,6 +196,19 @@ export function AppProvider({ children }) {
       }
     },
     [loadSavedTenders],
+  );
+
+  const removeChatByTenderId = useCallback(
+    async (itemid) => {
+      try {
+        await removeChat(itemid);
+
+        loadChatHistory();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [chatHistory],
   );
   const clearTenderFilters = useCallback(() => {
     setFilters({
@@ -374,6 +388,7 @@ export function AppProvider({ children }) {
     newChat,
     openChat,
     sendChatMessage,
+    removeChatByTenderId,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

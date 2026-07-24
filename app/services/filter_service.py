@@ -316,6 +316,8 @@ class FilterService:
         # this service only applies the hard structured filters above)
         # -----------------------------
 
+        
+
         filtered.sort(
             key=lambda x: (
 
