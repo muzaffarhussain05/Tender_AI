@@ -2,8 +2,11 @@ from datetime import date, timedelta,datetime
 from sqlalchemy import func
 
 from app.database import SessionLocal
-from app.models.tender import Tender
-
+from app.models import (
+    Tender,
+    SavedTender,
+   
+)
 
 class DashboardService:
 
@@ -58,30 +61,53 @@ class DashboardService:
     .scalar()
 )
         closing_change = closing_soon - yesterday_closing
+        today_start = datetime.combine(today, datetime.min.time())
+        tomorrow_start = today_start + timedelta(days=1)
+        yesterday_start = datetime.combine(yesterday, datetime.min.time())
+        save_today = (
+            self.db.query(func.count(SavedTender.id))
+            .filter(
+                SavedTender.saved_at >= today_start,
+                SavedTender.saved_at < tomorrow_start
+            )
+            .scalar()
+        )
 
+        save_yesterday = (
+            self.db.query(func.count(SavedTender.id))
+            .filter(
+                SavedTender.saved_at >= yesterday_start,
+                SavedTender.saved_at < today_start
+            )
+            .scalar()
+            
+)      
+        total_saved = (
+    self.db.query(func.count(SavedTender.id))
+    .scalar()
+)    
 
- 
-
-
+        save_change = save_today - save_yesterday
         return {
             "total_tenders": {
                 "count": total_tenders,
                 "change": total_change,
-                "trend": "up" if total_change >=0 else "down"
+                "trend": "up" if total_change >0 else "down"
             },
             "today_tenders": {
                 "count": today_tenders,
                 "change": today_change,
-                "trend": "up" if today_change >=0 else "down"
+                "trend": "up" if today_change >0 else "down"
             },
             "closing_soon": {
                 "count": closing_soon,
                 "change":closing_change,
-                "trend":"up" if closing_change >=0 else "down"
+                "trend":"up" if closing_change >0 else "down"
             },
             "saved_tenders": {
-                "count": 0,
-                "new": 0
+                "count": total_saved,
+                "change": save_change,
+                "trend":"up" if save_change >0 else "down"
             },
           
         }
@@ -172,7 +198,15 @@ class DashboardService:
             .order_by(func.month(Tender.publish_date))
             .all()
         )
-
+        saved_results = (
+        self.db.query(
+            func.month(SavedTender.saved_at).label("month"),
+            func.count(SavedTender.id).label("count")
+        )
+        .filter(func.year(SavedTender.saved_at) == current_year)
+        .group_by(func.month(SavedTender.saved_at))
+        .all()
+    )
         month_names = {
             1: "Jan",
             2: "Feb",
@@ -189,6 +223,7 @@ class DashboardService:
         }
 
         data = {month: count for month, count in results}
+        saved_data = {month: count for month, count in saved_results}
 
         start_month = max(1, datetime.now().month - months + 1)
 
@@ -199,7 +234,7 @@ class DashboardService:
             items.append({
                 "month": month_names[month],
                 "tenders": data.get(month, 0),
-                "saved": 0
+                "saved": saved_data.get(month, 0)
             })
 
         return {

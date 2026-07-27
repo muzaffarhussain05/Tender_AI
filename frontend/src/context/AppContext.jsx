@@ -41,9 +41,9 @@ const initialSettings = {
 };
 
 const initialUser = {
-  name: "Alex Rivera",
+  name: "Muzaffar Hussain",
   role: "Procurement Lead",
-  initials: "AR",
+  initials: "MH",
 };
 
 export function AppProvider({ children }) {
@@ -274,49 +274,93 @@ export function AppProvider({ children }) {
     }
   }, [loadChatHistory]);
 
-  const openChat = useCallback(
-    async (sessionId) => {
-      try {
-        setChatLoading(true);
+  const openChat = useCallback(async (sessionId) => {
+    try {
+      setChatLoading(true);
 
-        const conversation = await getConversation(sessionId);
+      const conversation = await getConversation(sessionId);
 
-        setCurrentChat({
-          session_id: conversation.session_id,
-          title: conversation.title,
-        });
+      setCurrentChat({
+        session_id: conversation.session_id,
+        title: conversation.title,
+      });
 
-        setChatMessages(conversation.messages);
-      } catch (err) {
-        console.error("Failed to load conversation:", err);
-      } finally {
-        setChatLoading(false);
-      }
-    },
-    [currentChat],
-  );
+      setChatMessages(conversation.messages);
+    } catch (err) {
+      console.error("Failed to load conversation:", err);
+    } finally {
+      setChatLoading(false);
+    }
+  }, []);
+  // const sendChatMessage = useCallback(
+  //   async (message) => {
+  //     try {
+  //       const sessionId = currentChat.session_id;
+  //       if (!currentChat) return;
+
+  //       setIsAiTyping(true);
+
+  //       const response = await sendMessage(sessionId, message);
+
+  //       setChatMessages((prev) => [
+  //         ...prev,
+  //         {
+  //           role: "user",
+  //           content: message,
+  //           created_at: new Date().toISOString(),
+  //         },
+  //         {
+  //           role: "assistant",
+  //           content: response.answer,
+  //           created_at: new Date().toISOString(),
+  //         },
+  //       ]);
+
+  //       setCurrentChat((prev) => ({
+  //         ...prev,
+  //         title: response.title,
+  //       }));
+
+  //       await loadChatHistory();
+  //       await openChat(currentChat.session_id);
+  //     } catch (err) {
+  //       console.error("Failed to send message:", err);
+  //     } finally {
+  //       setIsAiTyping(false);
+  //     }
+  //   },
+  //   [currentChat, loadChatHistory, openChat],
+  // );
+
   const sendChatMessage = useCallback(
     async (message) => {
+      if (!currentChat) return
+
+
+      const sessionId = currentChat.session_id;
+
+      // Show user message immediately
+      const userMessage = {
+        role: "user",
+        content: message,
+        created_at: new Date().toISOString(),
+      };
+
+      setChatMessages((prev) => [...prev, userMessage]);
+
+      setIsAiTyping(true);
+
       try {
-        if (!currentChat) return;
+        const response = await sendMessage(sessionId, message);
 
-        setIsAiTyping(true);
+        // Add assistant reply
+        const assistantMessage = {
+          role: "assistant",
+          content: response.answer,
+          created_at: new Date().toISOString(),
+        };
 
-        const response = await sendMessage(currentChat.session_id, message);
-
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            role: "user",
-            content: message,
-            created_at: new Date().toISOString(),
-          },
-          {
-            role: "assistant",
-            content: response.answer,
-            created_at: new Date().toISOString(),
-          },
-        ]);
+        setChatMessages((prev) => [...prev, assistantMessage]);
 
         setCurrentChat((prev) => ({
           ...prev,
@@ -326,7 +370,18 @@ export function AppProvider({ children }) {
         await loadChatHistory();
         await openChat(currentChat.session_id);
       } catch (err) {
-        console.error("Failed to send message:", err);
+        console.error(err);
+
+        // Optional: show an error message in the chat
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Sorry, something went wrong. Please try again.",
+            created_at: new Date().toISOString(),
+            error: true,
+          },
+        ]);
       } finally {
         setIsAiTyping(false);
       }

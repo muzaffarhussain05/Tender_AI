@@ -27,7 +27,7 @@ const navItems = [
 ];
 
 const bottomItems = [
-  { to: "/settings", icon: Settings, label: "Settings" },
+  // { to: "/settings", icon: Settings, label: "Settings" },
   // { to: "/analytics", icon: HelpCircle, label: "Support" },
 ];
 
@@ -35,8 +35,7 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
   const navigate = useNavigate();
-  const { chatHistory, currentUser, openChat, removeChatByTenderId } =
-    useApp();
+  const { chatHistory, currentUser, openChat, removeChatByTenderId } = useApp();
   const [openMenu, setOpenMenu] = useState(null);
   const filtered = chatHistory?.filter((item) =>
     item?.title?.toLowerCase()?.includes(historySearch.toLowerCase()),
@@ -196,7 +195,7 @@ export default function Sidebar() {
                       {/* Dropdown */}
                       {openMenu === item.id && (
                         <div className="absolute right-1 top-8 z-20 w-36 rounded-lg border bg-white shadow-lg py-1">
-                          <button
+                          {/*  <button
                             onClick={(e) => {
                               e.stopPropagation();
                               console.log("Rename", item.id);
@@ -207,7 +206,7 @@ export default function Sidebar() {
                             <Pencil size={14} />
                             Rename
                           </button>
-
+*/}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

@@ -89,10 +89,10 @@ export default function AIAssistant() {
 
   const handleSend = async () => {
     if (!input.trim()) return;
-
+    
+setInput("");
     await sendChatMessage(input);
-
-    setInput("");
+    
   };
   const isEmpty = chatMessages.length === 0;
 
@@ -259,14 +259,10 @@ export default function AIAssistant() {
                                           if (
                                             bookmarkedIds.has(card.tender_id)
                                           ) {
-                                            console.log("removing");
-
                                             await removeSavedTenderById(
                                               card.tender_id,
                                             );
                                           } else {
-                                            console.log("saving");
-
                                             await saveTenderById(
                                               card.tender_id,
                                             );

@@ -119,9 +119,12 @@ export default function Dashboard() {
   const areaData =
     tenderActivity?.items?.map((item) => ({
       month: item.month,
-      save: item.saved,
+      saved: item.saved,
       tenders: item.tenders,
     })) ?? [];
+
+  console.log(tenderActivity);
+  console.log("area", areaData);
 
   const stats = [
     {
@@ -129,6 +132,7 @@ export default function Dashboard() {
       value: dashboardStats?.total_tenders?.count ?? 0,
       icon: FileText,
       delta: `${dashboardStats?.total_tenders?.change ?? 0}%`,
+      trend: `${dashboardStats?.total_tenders?.trend}`,
       color: "#0058be",
     },
     {
@@ -136,6 +140,7 @@ export default function Dashboard() {
       value: dashboardStats?.today_tenders?.count ?? 0,
       icon: CalendarCheck,
       delta: `${dashboardStats?.today_tenders?.change ?? 0}`,
+      trend: `${dashboardStats?.today_tenders?.trend}`,
       color: "#059669",
     },
     {
@@ -143,6 +148,7 @@ export default function Dashboard() {
       value: dashboardStats?.closing_soon?.count ?? 0,
       icon: Clock,
       delta: `${dashboardStats?.closing_soon?.change ?? 0}`,
+      trend: `${dashboardStats?.closing_soon?.trend}`,
       color: "#dc2626",
     },
     {
@@ -150,12 +156,13 @@ export default function Dashboard() {
       value: dashboardStats?.saved_tenders?.count ?? 0,
       icon: Bookmark,
       delta: `${dashboardStats?.saved_tenders?.change ?? 0}`,
+      trend: `${dashboardStats?.saved_tenders?.trend}`,
       color: "#7c3aed",
     },
   ];
 
   // const recentTenders = recentTenders
-
+  console.log(stats);
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <Header searchPlaceholder="Search tenders, organizations..." />
@@ -188,9 +195,17 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="text-2xl font-bold text-[#0b1c30]">{s.value}</div>
-              <div className="flex items-center gap-1 text-xs text-green-600">
-                <ArrowUpRight size={12} />
-                <ArrowDownLeft size={12} />
+              <div
+                className={`flex items-center gap-1 text-xs ${s.trend == "up" ? "text-green-600" : "text-red-600"}`}
+              >
+                {}
+
+                {s.trend === "up" ? (
+                  <ArrowUpRight size={12} />
+                ) : (
+                  <ArrowDownLeft size={12} />
+                )}
+
                 {s.delta}
               </div>
             </motion.div>
@@ -241,7 +256,7 @@ export default function Dashboard() {
                   type="monotone"
                   dataKey="saved"
                   stroke="#7c3aed"
-                  fill="none"
+                  fill=""
                   strokeWidth={2}
                   strokeDasharray="4 2"
                 />
@@ -272,13 +287,12 @@ export default function Dashboard() {
                     <th className="text-left text-[10px] font-semibold text-[#6b7280] uppercase px-4 py-2">
                       Tender Details
                     </th>
-                    <th className="text-left text-[10px] font-semibold text-[#6b7280] uppercase  py-2 hidden xl:table-cell">
+                    <th className="text-left text-[10px] font-semibold text-[#6b7280] uppercase  py-4 hidden xl:table-cell">
                       Published Date
                     </th>
                     <th className="text-right text-[10px] font-semibold text-[#6b7280] uppercase px-4 py-2">
                       Closing Date
                     </th>
-                    <th className="px-4 py-2" />
                   </tr>
                 </thead>
                 <tbody>
@@ -306,26 +320,15 @@ export default function Dashboard() {
                           {t.location}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-xs font-semibold text-[#0058be] hidden xl:table-cell">
-                        {new Date(t.publish_date).toISOString().split("T")[0]}
+                      <td className="px-1  py-3 text-xs font-semibold text-[#0058be] l">
+                        <span>
+                          {new Date(t.publish_date).toISOString().split("T")[0]}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <span className="text-xs font-semibold text-[#da0c0c]">
-                            {
-                              new Date(t.closing_date)
-                                .toISOString()
-                                .split("T")[0]
-                            }
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex gap-1">
-                          <button className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
-                            <ExternalLink size={13} className="text-gray-400" />
-                          </button>
-                        </div>
+                      <td className="px-1 py-3 text-left">
+                        <span className="text-xs font-semibold text-[#da0c0c]">
+                          {new Date(t.closing_date).toISOString().split("T")[0]}
+                        </span>
                       </td>
                     </motion.tr>
                   ))}

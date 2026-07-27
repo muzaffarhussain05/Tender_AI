@@ -62,9 +62,9 @@ export default function Header({ searchPlaceholder = "Search..." }) {
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
-        <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-[#45464d]">
+        {/* <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-[#45464d]">
           <Bell size={17} />
-        </button>
+        </button> */}
         <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-[#45464d]">
           <RotateCcw size={17} />
         </button>
