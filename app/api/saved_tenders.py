@@ -35,7 +35,7 @@ async def get_saved_tenders():
     status_code=status.HTTP_201_CREATED,
     summary="Save Tender",
 )
-async def save_tender(tender_id: int):
+async def save_tender(tender_id):
 
     service = SavedTenderService()
 
@@ -68,7 +68,7 @@ async def save_tender(tender_id: int):
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove Saved Tender",
 )
-async def remove_saved_tender(tender_id: int):
+async def remove_saved_tender(tender_id):
 
     service = SavedTenderService()
 

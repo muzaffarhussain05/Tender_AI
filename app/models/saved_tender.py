@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, String
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
@@ -11,8 +11,8 @@ class SavedTender(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     tender_id = Column(
-        Integer,
-        ForeignKey("tenders.id", ondelete="CASCADE"),
+        String(500),
+        ForeignKey("tenders.tender_no", ondelete="CASCADE"),
         nullable=False,
         unique=True,
         index=True,

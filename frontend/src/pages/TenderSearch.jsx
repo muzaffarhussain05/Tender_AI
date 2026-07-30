@@ -18,7 +18,6 @@ import {
 import Header from "../components/Header";
 import { useApp } from "../context/AppContext";
 
-
 export default function TenderSearch() {
   const {
     tenderList,
@@ -317,19 +316,15 @@ export default function TenderSearch() {
                       </h3>
                       <button
                         onClick={async () => {
-                          if (bookmarkedIds.has(t.id)) {
-                            
-
-                            await removeSavedTenderById(t.id);
+                          if (bookmarkedIds.has(t.tender_no)) {
+                            await removeSavedTenderById(t.tender_no);
                           } else {
-                            
-
-                            await saveTenderById(t.id);
+                            await saveTenderById(t.tender_no);
                           }
                         }}
                         className="shrink-0 p-1 hover:bg-gray-100 rounded-md transition-colors"
                       >
-                        {bookmarkedIds.has(t.id) ? (
+                        {bookmarkedIds.has(t.tender_no) ? (
                           <BookmarkCheck size={14} className="text-[#0058be]" />
                         ) : (
                           <Bookmark size={14} className="text-gray-400" />

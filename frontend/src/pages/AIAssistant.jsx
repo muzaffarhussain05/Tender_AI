@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import logo from "../assets/tender-logo.png";
 import {
   Send,
   Paperclip,
@@ -15,14 +16,22 @@ import {
   MapPin,
   Calendar,
   DollarSign,
+  BookmarkCheck,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useApp } from "../context/AppContext";
-
+import uuid from "react-uuid";
 const suggestions = [
-  '"IT tenders in Karachi"',
-  '"Summarize eligibility for NEOM"',
-  '"Market analysis for solar logistics"',
+  '"Show software development tenders"',
+  '"tenders published today"',
+  '"Karachi tenders"',
+  '"networking tenders closing next week"',
+  '"tenders for database management systems"',
+  '"firewall tenders in Islamabad that close this week"',
+  '"active tenders"',
+  '"Network equipment"',
+  '"cloud computing and cybersecurity tenders"',
+  '"tenders published this month"',
 ];
 
 const statusColor = {
@@ -72,6 +81,9 @@ export default function AIAssistant() {
     bookmarkedIds,
     removeSavedTenderById,
     saveTenderById,
+    loadChatHistory,
+    createChat,
+    setCurrentChat,
   } = useApp();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
@@ -89,10 +101,15 @@ export default function AIAssistant() {
 
   const handleSend = async () => {
     if (!input.trim()) return;
-    
-setInput("");
-    await sendChatMessage(input);
-    
+    setInput("");
+
+    if (!currentChat) {
+      const chat = await createChat();
+      await sendChatMessage(input, chat.session_id);
+      setCurrentChat(chat);
+    } else {
+      await sendChatMessage(input);
+    }
   };
   const isEmpty = chatMessages.length === 0;
 
@@ -118,22 +135,23 @@ setInput("");
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
           {isEmpty ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col items-center justify-center h-full text-center"
             >
-              <div className="w-12 h-12 rounded-2xl bg-[#dce8ff] flex items-center justify-center mb-4">
-                <Sparkles size={22} className="text-[#0058be]" />
-              </div>
-              <h2 className="text-2xl font-bold text-[#0b1c30] mb-2">
-                Tender AI Assistant
-              </h2>
+              <img
+                src={logo}
+                alt=""
+                className="rounded  h-60"
+                draggable={false}
+              />
+
               <p className="text-sm text-[#6b7280] max-w-sm mb-6">
-                Analyze thousands of procurement documents and market trends in
-                seconds.
+                Find the right tenders faster with intelligent search, analysis,
+                and recommendations
               </p>
               <div className="flex flex-wrap gap-2 justify-center">
                 {suggestions.map((s) => (
@@ -152,7 +170,7 @@ setInput("");
               <AnimatePresence>
                 {chatMessages.map((msg) => (
                   <motion.div
-                    key={msg.id}
+                    key={uuid()}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}

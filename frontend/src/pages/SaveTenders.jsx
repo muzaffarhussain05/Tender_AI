@@ -61,13 +61,9 @@ export default function SavedTenders() {
     loadSavedTenders();
   }, []);
 
-  // const filtered = savedTenders.filter(
-  //   (t) =>
-  //     (activeFolder === "all" || t.folder === activeFolder) &&
-  //     (search === "" ||
-  //       t.title.toLowerCase().includes(search.toLowerCase()) ||
-  //       t.organization.toLowerCase().includes(search.toLowerCase())),
-  // );
+  const filtered = savedTenders.filter((t) =>
+    t.title.toLowerCase().includes(search.toLowerCase()),
+  );
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -101,7 +97,7 @@ export default function SavedTenders() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {savedTenders.length === 0 ? (
+            {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <div className="w-20 h-20 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center mb-4">
                   <FolderOpen size={28} className="text-gray-300" />
@@ -141,7 +137,7 @@ export default function SavedTenders() {
                   </tr>
                 </thead>
                 <tbody>
-                  {savedTenders.map((t, i) => (
+                  {filtered.map((t, i) => (
                     <motion.tr
                       key={t.id}
                       initial={{ opacity: 0 }}
@@ -181,6 +177,7 @@ export default function SavedTenders() {
                                 console.log("removing");
 
                                 await removeSavedTenderById(t.tender_id);
+                                console.log(t);
                               } else {
                                 console.log("saving");
 

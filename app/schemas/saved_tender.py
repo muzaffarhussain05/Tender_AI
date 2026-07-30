@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class SavedTenderItem(BaseModel):
     id: int
-    tender_id: int
+    tender_id: str
     title: str
     organization: str
     category: str

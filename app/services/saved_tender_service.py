@@ -13,11 +13,11 @@ class SavedTenderService:
     def close(self):
         self.db.close()
 
-    def save_tender(self, tender_id: int):
+    def save_tender(self, tender_id):
 
         tender = (
             self.db.query(Tender)
-            .filter(Tender.id == tender_id)
+            .filter(Tender.tender_no == tender_id)
             .first()
         )
 
@@ -43,7 +43,7 @@ class SavedTenderService:
 
         return saved
 
-    def remove_saved_tender(self, tender_id: int):
+    def remove_saved_tender(self, tender_id):
 
         saved = (
             self.db.query(SavedTender)
@@ -77,10 +77,11 @@ class SavedTenderService:
         for saved in saved_tenders:
 
             tender = saved.tender
+            print(tender)
 
             items.append({
                 "id": saved.id,
-                "tender_id": tender.id,
+                "tender_id": tender.tender_no,
                 "title": tender.title,
                 "organization": tender.organization,
                 "category": tender.category,

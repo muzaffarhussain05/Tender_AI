@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
-
+import logo from "../assets/simple-logo.png";
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/ai-assistant", icon: Bot, label: "AI Assistant" },
@@ -70,10 +70,9 @@ export default function Sidebar() {
       className="relative flex flex-col h-full bg-white border-r border-gray-200 overflow-hidden shrink-0"
     >
       {/* Logo */}
-      <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-100">
-        <div className="w-8 h-8 rounded-lg bg-[#0058be] flex items-center justify-center shrink-0">
-          <FileText size={16} color="white" />
-        </div>
+      <div className="flex items-center gap-1 px-4 py-4 border-b border-gray-100">
+        <img src={logo} alt="" className="cover w-15 h-10" />
+
         <AnimatePresence>
           {!collapsed && (
             <motion.div

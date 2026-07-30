@@ -113,6 +113,8 @@ export function AppProvider({ children }) {
     }
   }, []);
   const bookmarkedIds = new Set(savedTenders.map((t) => t.tender_id));
+  console.log(bookmarkedIds);
+  console.log("saved tenders", savedTenders);
 
   //recent tenders on dashboard
 
@@ -292,52 +294,12 @@ export function AppProvider({ children }) {
       setChatLoading(false);
     }
   }, []);
-  // const sendChatMessage = useCallback(
-  //   async (message) => {
-  //     try {
-  //       const sessionId = currentChat.session_id;
-  //       if (!currentChat) return;
-
-  //       setIsAiTyping(true);
-
-  //       const response = await sendMessage(sessionId, message);
-
-  //       setChatMessages((prev) => [
-  //         ...prev,
-  //         {
-  //           role: "user",
-  //           content: message,
-  //           created_at: new Date().toISOString(),
-  //         },
-  //         {
-  //           role: "assistant",
-  //           content: response.answer,
-  //           created_at: new Date().toISOString(),
-  //         },
-  //       ]);
-
-  //       setCurrentChat((prev) => ({
-  //         ...prev,
-  //         title: response.title,
-  //       }));
-
-  //       await loadChatHistory();
-  //       await openChat(currentChat.session_id);
-  //     } catch (err) {
-  //       console.error("Failed to send message:", err);
-  //     } finally {
-  //       setIsAiTyping(false);
-  //     }
-  //   },
-  //   [currentChat, loadChatHistory, openChat],
-  // );
 
   const sendChatMessage = useCallback(
-    async (message) => {
-      if (!currentChat) return
+    async (message, session_id) => {
+      console.log(session_id);
 
-
-      const sessionId = currentChat.session_id;
+      const sessionId = session_id ? session_id : currentChat?.session_id;
 
       // Show user message immediately
       const userMessage = {
@@ -368,7 +330,7 @@ export function AppProvider({ children }) {
         }));
 
         await loadChatHistory();
-        await openChat(currentChat.session_id);
+        await openChat(sessionId);
       } catch (err) {
         console.error(err);
 
@@ -390,6 +352,7 @@ export function AppProvider({ children }) {
   );
   useEffect(() => {
     loadChatHistory();
+    loadSavedTenders();
   }, [loadChatHistory]);
 
   const value = {
@@ -444,6 +407,7 @@ export function AppProvider({ children }) {
     openChat,
     sendChatMessage,
     removeChatByTenderId,
+    createChat,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
