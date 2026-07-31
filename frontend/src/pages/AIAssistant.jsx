@@ -87,6 +87,11 @@ export default function AIAssistant() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
+  
+
+
+
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, isAiTyping]);
@@ -167,9 +172,9 @@ export default function AIAssistant() {
           ) : (
             <>
               <AnimatePresence>
-                {chatMessages.map((msg) => (
+                {chatMessages.map((msg,index) => (
                   <motion.div
-                    key={uuid()}
+                    key={`${msg.created_at}-${msg.role}-${index}`}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     {msg.role === "user" ? (

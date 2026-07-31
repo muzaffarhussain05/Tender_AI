@@ -95,6 +95,8 @@ export function AppProvider({ children }) {
 
   //load dashboard
 
+console.count("AppProvider");
+
   const loadDashboard = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -185,6 +187,21 @@ export function AppProvider({ children }) {
     [loadSavedTenders],
   );
 
+
+    const loadChatHistory = useCallback(async () => {
+    try {
+      setChatLoading(true);
+console.log("loadChatHistory");
+      const data = await getChatHistory();
+
+      setChatHistory(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setChatLoading(false);
+    }
+  }, []);
+
   const removeSavedTenderById = useCallback(
     async (tenderId) => {
       try {
@@ -199,6 +216,7 @@ export function AppProvider({ children }) {
     },
     [loadSavedTenders],
   );
+  
 
   const removeChatByTenderId = useCallback(
     async (itemid) => {
@@ -210,7 +228,7 @@ export function AppProvider({ children }) {
         console.error(error);
       }
     },
-    [chatHistory],
+    [loadChatHistory],
   );
   const clearTenderFilters = useCallback(() => {
     setFilters({
@@ -231,6 +249,12 @@ export function AppProvider({ children }) {
       sort_order: "desc",
     });
   }, []);
+
+
+   useEffect(() => {
+    loadChatHistory();
+    loadSavedTenders();
+  }, [loadChatHistory]);
   //loadtenderdetails
   const loadTenderDetails = useCallback(async (id) => {
     try {
@@ -246,19 +270,7 @@ export function AppProvider({ children }) {
     }
   }, []);
 
-  const loadChatHistory = useCallback(async () => {
-    try {
-      setChatLoading(true);
 
-      const data = await getChatHistory();
-
-      setChatHistory(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setChatLoading(false);
-    }
-  }, []);
 
   const newChat = useCallback(async () => {
     try {
@@ -279,6 +291,7 @@ export function AppProvider({ children }) {
   const openChat = useCallback(async (sessionId) => {
     try {
       setChatLoading(true);
+      console.log("openChat");
 
       const conversation = await getConversation(sessionId);
 
@@ -348,12 +361,9 @@ export function AppProvider({ children }) {
         setIsAiTyping(false);
       }
     },
-    [currentChat, loadChatHistory],
+    [currentChat, loadChatHistory,openChat],
   );
-  useEffect(() => {
-    loadChatHistory();
-    loadSavedTenders();
-  }, [loadChatHistory]);
+ 
 
   const value = {
     currentUser,
