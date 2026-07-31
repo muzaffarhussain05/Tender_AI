@@ -23,7 +23,6 @@ import { useApp } from "../context/AppContext";
 import uuid from "react-uuid";
 const suggestions = [
   '"Show software development tenders"',
-  '"tenders published today"',
   '"Karachi tenders"',
   '"networking tenders closing next week"',
   '"tenders for database management systems"',
@@ -171,8 +170,6 @@ export default function AIAssistant() {
                 {chatMessages.map((msg) => (
                   <motion.div
                     key={uuid()}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     {msg.role === "user" ? (
