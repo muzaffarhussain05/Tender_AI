@@ -160,7 +160,7 @@ export default function Sidebar() {
               {Object.entries(grouped).map(([group, items]) => (
                 <div key={group}>
                   <div className="text-[9px] font-semibold text-[#6b7280] uppercase tracking-wider px-2 py-1">
-                    {group}
+                    {/* {group} */}
                   </div>
                   {items.map((item) => (
                     <div
